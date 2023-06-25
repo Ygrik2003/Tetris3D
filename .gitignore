@@ -1,3 +1,7 @@
+# Visual Studio local properties
+.vs
+.vscode
+
 # Gradle files
 .gradle/
 build/

@@ -3,7 +3,23 @@
 #include "imgui/imgui.h"
 #include "texture.h"
 
+#ifdef USE_GL_DEBUG
+#include <KHR/khrplatform.h>
+#endif
+
+#include <glad/glad.h>
+#ifdef __ANDROID__
 #include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <android/log.h>
+
+#define GL_GLES_PROTOTYPES 1
+#include <GLES2/gl2.h>
+
+#define glActiveTexture_ glActiveTexture
+#else
+#include <SDL3/SDL.h>
+#endif
 
 class engine_opengl : public engine
 {

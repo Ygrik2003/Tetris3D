@@ -21,7 +21,6 @@ enum class direction
 constexpr uint32_t column_bit_for_color = 2;
 constexpr uint32_t column_count_cells   = 16;
 
-#pragma pack(push, 1)
 // clang-format off
 /// @brief Bit field for definition each column in 3d tetris
 /// The each bit field have 2 bits for set color of block in column

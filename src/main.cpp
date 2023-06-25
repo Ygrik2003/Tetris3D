@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 
-int main()
+int main(int argc, char* argv[])
 {
     config cfg;
     cfg.shader_fragment = "./99-game/shaders/shader.frag";

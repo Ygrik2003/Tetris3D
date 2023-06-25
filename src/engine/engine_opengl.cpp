@@ -3,13 +3,6 @@
 #include "audio_buffer.h"
 #include "objects/mesh.h"
 
-#ifndef _WIN32
-#include <KHR/khrplatform.h>
-#endif
-#include <SDL3/SDL.h>
-#include <glad/glad.h>
-
-#include <SDL3/SDL.h>
 #include <filesystem>
 #include <fstream>
 #include <map>
@@ -40,7 +33,7 @@ static const char* get_sound_format_name(uint16_t format_value)
     return it->second;
 }
 
-#ifndef _WIN32
+#ifdef USE_GL_DEBUG
 void APIENTRY gl_debug_output(GLenum        source,
                               GLenum        type,
                               GLuint        id,
@@ -381,7 +374,7 @@ int engine_opengl::initialize(config& cfg)
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gl_major_v);
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, gl_minor_v);
 
-    SDL_GLContext gl_context =
+    gl_context =
         SDL_GL_CreateContext(static_cast<SDL_Window*>(window));
 
     if (gl_context == nullptr)
@@ -405,7 +398,7 @@ int engine_opengl::initialize(config& cfg)
         return 0;
     }
 
-#ifndef _WIN32
+#ifdef USE_GL_DEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(gl_debug_output, nullptr);
