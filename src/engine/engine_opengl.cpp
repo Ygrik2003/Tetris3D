@@ -8,10 +8,10 @@
 #include <map>
 #include <stdexcept>
 
-bool ImGui_ImplSdlGL3_Init(SDL_Window* window);
+bool ImGui_ImplSdlGL3_Init(SDL_Window* window, config& cfg);
 void ImGui_ImplSdlGL3_Shutdown();
 void ImGui_ImplSdlGL3_InvalidateDeviceObjects();
-bool ImGui_ImplSdlGL3_CreateDeviceObjects();
+bool ImGui_ImplSdlGL3_CreateDeviceObjects(config& cfg);
 void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window);
 bool ImGui_ImplSdlGL3_ProcessEvent(const SDL_Event* event);
 void ImGui_ImplSdlGL3_RenderDrawLists(engine* eng, ImDrawData* draw_data);
@@ -425,7 +425,7 @@ int engine_opengl::initialize(config& cfg)
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
 
-    if (!ImGui_ImplSdlGL3_Init(static_cast<SDL_Window*>(window)))
+    if (!ImGui_ImplSdlGL3_Init(static_cast<SDL_Window*>(window), _config))
     {
         throw std::runtime_error("error: failed to init ImGui");
     }
@@ -877,7 +877,7 @@ void ImGui_ImplSdlGL3_CreateFontsTexture()
                                          static_cast<size_t>(height));
 }
 
-bool ImGui_ImplSdlGL3_CreateDeviceObjects()
+bool ImGui_ImplSdlGL3_CreateDeviceObjects(config& cfg)
 {
     g_imgui_shader =
         new shader_opengl(cfg.shader_vertex_imgui, cfg.shader_fragment_imgui);
@@ -896,7 +896,7 @@ void ImGui_ImplSdlGL3_InvalidateDeviceObjects()
     g_imgui_shader = nullptr;
 }
 
-bool ImGui_ImplSdlGL3_Init(SDL_Window* window)
+bool ImGui_ImplSdlGL3_Init(SDL_Window* window, config& cfg)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -962,6 +962,11 @@ bool ImGui_ImplSdlGL3_Init(SDL_Window* window)
 
     g_Time = SDL_GetTicks() / 1000.f;
 
+    if (io.Fonts->TexID == nullptr)
+    {
+        ImGui_ImplSdlGL3_CreateDeviceObjects(cfg);
+    }
+
     return true;
 }
 
@@ -974,11 +979,6 @@ void ImGui_ImplSdlGL3_Shutdown()
 void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window)
 {
     ImGuiIO& io = ImGui::GetIO();
-
-    if (io.Fonts->TexID == nullptr)
-    {
-        ImGui_ImplSdlGL3_CreateDeviceObjects();
-    }
 
     // Setup display size (every frame to accommodate for window resizing)
     int w, h;

@@ -8,6 +8,8 @@
 #endif
 #include <cstddef>
 #include <cstdint>
+#include <memory>
+#include <stdexcept>
 
 #define GL_CHECK_ERRORS()                                                      \
     {                                                                          \
@@ -325,3 +327,11 @@ struct triangle
     std::array<T, 3> vertexes;
     vector3d         normal;
 };
+
+struct membuff
+{
+    std::unique_ptr<char[]> ptr  = nullptr;
+    size_t                  size = 0;
+};
+
+membuff* load_file_to_memory(const char* path);

@@ -64,24 +64,29 @@ void shader_opengl::reload()
 
 void shader_opengl::load(const char* path, int type)
 {
-    if (!std::filesystem::exists(path))
-        throw std::runtime_error("No file: " + std::string(path));
+    // if (!std::filesystem::exists(path))
+    //     throw std::runtime_error("No file: " + std::string(path));
+
+    // std::string   buffer;
+    // std::ifstream file(path);
+
+    // file.seekg(0, std::ios::end);
+    // buffer.reserve(file.tellg());
+
+    // file.seekg(0, std::ios::beg);
+    // buffer.assign(std::istreambuf_iterator<char>(file),
+    //               std::istreambuf_iterator<char>());
+    // const char* c_buffer = buffer.data();
+    // file.close();
+
+    membuff*    file     = load_file_to_memory(path);
+    const char* c_buffer = file->ptr.get();
+
+    std::cout << c_buffer << std::endl;
 
     GLuint shader = glCreateShader(type);
     GL_CHECK_ERRORS()
 
-    std::string   buffer;
-    std::ifstream file(path);
-
-    file.seekg(0, std::ios::end);
-    buffer.reserve(file.tellg());
-
-    file.seekg(0, std::ios::beg);
-    buffer.assign(std::istreambuf_iterator<char>(file),
-                  std::istreambuf_iterator<char>());
-
-    const char* c_buffer = buffer.data();
-    file.close();
     glShaderSource(shader, 1, &c_buffer, nullptr);
     GL_CHECK_ERRORS()
 

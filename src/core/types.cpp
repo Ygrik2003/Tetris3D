@@ -1,4 +1,6 @@
 #include "types.h"
+#include "SDL3/SDL_rwops.h"
+#include <string>
 
 color::rgba::rgba() {}
 color::rgba::rgba(float r, float g, float b, float a)
@@ -218,4 +220,36 @@ vertex3d_colored_textured::vertex3d_colored_textured(vertex3d    ver,
     this->pos  = ver.pos;
     this->rgba = clr;
     this->uv   = uv;
+}
+
+membuff* load_file_to_memory(const char* path)
+{
+    SDL_RWops* file = SDL_RWFromFile(path, "rb");
+    if (file == nullptr)
+    {
+        throw std::runtime_error("can't load file: " + std::string(path));
+    }
+
+    Sint64 file_size = file->size(file);
+    if (file_size == -1)
+    {
+        throw std::runtime_error("can't determine size of file: " +
+                                 std::string(path));
+    }
+    const size_t            size = static_cast<size_t>(file_size);
+    std::unique_ptr<char[]> mem  = std::make_unique<char[]>(size);
+
+    const size_t num_readed_objects = file->read(file, mem.get(), size);
+    if (num_readed_objects != size)
+    {
+        throw std::runtime_error("can't read all content from file: " +
+                                 std::string(path));
+    }
+
+    if (file->close(file) != 0)
+    {
+        throw std::runtime_error("failed close file: " + std::string(path));
+    }
+    mem[size] = 0;
+    return new membuff{ std::move(mem), size };
 }

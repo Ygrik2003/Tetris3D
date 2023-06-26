@@ -1,4 +1,5 @@
 #include "model.h"
+#include <SDL3/SDL.h>
 #include <stdexcept>
 
 model::model(const char* path)
@@ -24,9 +25,13 @@ figure* model::get_figure()
 void model::load_model(const char* path)
 {
     Assimp::Importer import;
-    const aiScene*   scene =
-        import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-    // import.ReadFileFromMemory();
+    // const aiScene*   scene =
+    //     import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+    membuff*       file = load_file_to_memory(path);
+    const aiScene* scene =
+        import.ReadFileFromMemory(static_cast<void*>(file->ptr.get()),
+                                  file->size,
+                                  aiProcess_Triangulate | aiProcess_FlipUVs);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
         !scene->mRootNode)
@@ -75,7 +80,7 @@ mesh model::process_mesh(aiMesh* m, const aiScene* scene)
                                            m->mVertices[i].z),
                                   vector2d(0, 0));
         }
-        // if (m->mNormals[i])
+        // if (m->mNormals)
         // {
         v.normal.x = m->mNormals[i].x;
         v.normal.y = m->mNormals[i].y;
