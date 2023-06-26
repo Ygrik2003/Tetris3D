@@ -54,7 +54,7 @@ struct column
     void   operator&=(const column& mask) { colors &= mask.colors; }
     column operator&(const uint32_t& mask)
     {
-        return column{ .colors = colors & mask };
+        return column{ colors & mask };
     }
     uint32_t operator~() { return ~colors; }
 
@@ -127,7 +127,7 @@ private:
     std::vector<figure*> figures;
 
     std::vector<column>  columns;
-    column               column_wall{ .colors = static_cast<uint32_t>(-1) };
+    column               column_wall{ static_cast<uint32_t>(-1) };
     std::vector<uint8_t> buffer_z;
 
     shader* shader_scene;
