@@ -285,7 +285,7 @@ int engine_opengl::initialize(config& cfg)
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-    if (cfg.is_full_sreen)
+    if (cfg.is_full_screen)
     {
         window = static_cast<SDL_Window*>(
             SDL_CreateWindow(cfg.app_name,

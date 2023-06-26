@@ -104,28 +104,28 @@ bool game_tetris::event_listener(event& e)
             }
 
             // Free Camera
-            // if (e.motion.x || e.motion.y)
-            // {
-            //     cam->add_rotate(0,
-            //                     cfg.camera_speed_rotate * e.motion.x,
-            //                     cfg.camera_speed_rotate * e.motion.y);
-            // }
-            // if (e.keyboard.w_clicked)
-            //     cam->set_move_forward(true);
-            // if (e.keyboard.w_released)
-            //     cam->set_move_forward(false);
-            // if (e.keyboard.s_clicked)
-            //     cam->set_move_backward(true);
-            // if (e.keyboard.s_released)
-            //     cam->set_move_backward(false);
-            // if (e.keyboard.a_clicked)
-            //     cam->set_move_left(true);
-            // if (e.keyboard.a_released)
-            //     cam->set_move_left(false);
-            // if (e.keyboard.d_clicked)
-            //     cam->set_move_right(true);
-            // if (e.keyboard.d_released)
-            //     cam->set_move_right(false);
+            if (e.motion.x || e.motion.y)
+            {
+                cam->add_rotate(0,
+                                cfg.camera_speed_rotate * e.motion.x,
+                                cfg.camera_speed_rotate * e.motion.y);
+            }
+            if (e.keyboard.w_clicked)
+                cam->set_move_forward(true);
+            if (e.keyboard.w_released)
+                cam->set_move_forward(false);
+            if (e.keyboard.s_clicked)
+                cam->set_move_backward(true);
+            if (e.keyboard.s_released)
+                cam->set_move_backward(false);
+            if (e.keyboard.a_clicked)
+                cam->set_move_left(true);
+            if (e.keyboard.a_released)
+                cam->set_move_left(false);
+            if (e.keyboard.d_clicked)
+                cam->set_move_right(true);
+            if (e.keyboard.d_released)
+                cam->set_move_right(false);
         }
     }
     return true;
@@ -136,11 +136,12 @@ void game_tetris::update()
     static std::chrono::steady_clock timer;
     static auto                      last_time_update = timer.now();
 
-    cam->set_rotate(
-        0, M_PI / 2 + camera_angle, M_PI / 2 - atan(1. / sqrt(view_height)));
-    cam->set_translate(sqrt(view_height) * std::cos(camera_angle),
-                       -view_height,
-                       -sqrt(view_height) * std::sin(camera_angle));
+    cam->update();
+    // cam->set_rotate(
+    //     0, M_PI / 2 + camera_angle, M_PI / 2 - atan(1. / sqrt(view_height)));
+    // cam->set_translate(sqrt(view_height) * std::cos(camera_angle),
+    //                    -view_height,
+    //                    -sqrt(view_height) * std::sin(camera_angle));
 
     if ((timer.now() - last_time_update).count() < delay * 1e9)
         return;

@@ -9,25 +9,33 @@ texture_opengl::texture_opengl(const char* path)
     : file_path(path)
 {
     std::vector<std::byte> png_file_in_memory;
-    std::ifstream          ifs(path, std::ios_base::binary);
-    if (!ifs)
-    {
-        throw std::runtime_error("can't load texture");
-    }
-    ifs.seekg(0, std::ios_base::end);
-    std::streamoff pos_in_file = ifs.tellg();
-    png_file_in_memory.resize(static_cast<size_t>(pos_in_file));
-    ifs.seekg(0, std::ios_base::beg);
-    if (!ifs)
-    {
-        throw std::runtime_error("can't load texture");
-    }
 
-    ifs.read(reinterpret_cast<char*>(png_file_in_memory.data()), pos_in_file);
-    if (!ifs.good())
-    {
-        throw std::runtime_error("can't load texture");
-    }
+    // std::ifstream          ifs(path, std::ios_base::binary);
+    // if (!ifs)
+    // {
+    //     throw std::runtime_error("can't load texture");
+    // }
+    // ifs.seekg(0, std::ios_base::end);
+    // std::streamoff pos_in_file = ifs.tellg();
+    // png_file_in_memory.resize(static_cast<size_t>(pos_in_file));
+    // ifs.seekg(0, std::ios_base::beg);
+    // if (!ifs)
+    // {
+    //     throw std::runtime_error("can't load texture");
+    // }
+
+    // ifs.read(reinterpret_cast<char*>(png_file_in_memory.data()),
+    // pos_in_file); if (!ifs.good())
+    // {
+    //     throw std::runtime_error("can't load texture");
+    // }
+
+    membuff* file = load_file_to_memory(path);
+    png_file_in_memory.resize(file->size);
+
+    std::copy(reinterpret_cast<std::byte*>(file->ptr.get()),
+              reinterpret_cast<std::byte*>(file->ptr.get() + file->size),
+              png_file_in_memory.begin());
 
     std::vector<std::byte> image;
     unsigned long          w     = 0;
@@ -42,6 +50,7 @@ texture_opengl::texture_opengl(const char* path)
     }
 
     gen_texture_from_pixels(image.data(), w, h);
+    delete file;
 }
 
 texture_opengl::texture_opengl(const void*  pixels,

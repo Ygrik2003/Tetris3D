@@ -16,7 +16,7 @@ struct config
 
     double width         = 1920 - 100;
     double height        = 1080 - 100;
-    bool   is_full_sreen = true;
+    bool   is_full_screen = true;
 
     float camera_speed_rotate = 1. / 100.;
     float camera_speed        = 0.05;
