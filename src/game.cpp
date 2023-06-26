@@ -8,8 +8,8 @@ game_tetris::game_tetris()
     state.is_rotated = 0;
     state.is_moving  = 0;
 
-    figure_board = model("./99-game/textures/board.obj").get_figure();
-    figure_cube  = model("./99-game/textures/cube.obj").get_figure();
+    figure_board = model(cfg.model_board).get_figure();
+    figure_cube  = model(cfg.model_cube).get_figure();
 
     buffer_z.resize(cells_max * cells_max);
 
@@ -45,8 +45,7 @@ int game_tetris::initialize(config cfg)
 
     add_figure(figure_board, texture_board);
     add_primitive();
-    my_engine->play_sound("./99-game/res/road.wav");
-    // my_engine->play_sound("./99-game/res/8-bit_detective.wav");
+    my_engine->play_sound(cfg.sound_background_music);
 
     return 1;
 };
@@ -61,7 +60,6 @@ bool game_tetris::event_listener(event& e)
         {
             return false;
         }
-
         // Only game buttons
         if (state.is_started)
         {
@@ -159,7 +157,7 @@ void game_tetris::update()
                 update_buffer_z();
                 check_layer();
                 add_primitive();
-                // my_engine->play_sound("./99-game/res/metal_pipe.wav");
+                my_engine->play_sound(cfg.sound_collision);
                 is_stop_falling = true;
                 break;
             }

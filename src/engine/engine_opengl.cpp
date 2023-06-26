@@ -279,8 +279,8 @@ int engine_opengl::initialize(config& cfg)
 {
     if (SDL_Init(SDL_INIT_EVERYTHING) > 0)
     {
-        std::runtime_error(std::string("Error in Init SDL3: ") +
-                           SDL_GetError());
+        throw std::runtime_error(std::string("Error in Init SDL3: ") +
+                                 SDL_GetError());
     }
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -374,8 +374,7 @@ int engine_opengl::initialize(config& cfg)
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gl_major_v);
     // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, gl_minor_v);
 
-    gl_context =
-        SDL_GL_CreateContext(static_cast<SDL_Window*>(window));
+    gl_context = SDL_GL_CreateContext(static_cast<SDL_Window*>(window));
 
     if (gl_context == nullptr)
     {
@@ -428,7 +427,7 @@ int engine_opengl::initialize(config& cfg)
 
     if (!ImGui_ImplSdlGL3_Init(static_cast<SDL_Window*>(window)))
     {
-        std::runtime_error("error: failed to init ImGui");
+        throw std::runtime_error("error: failed to init ImGui");
     }
 
     ImGui_ImplSdlGL3_NewFrame(static_cast<SDL_Window*>(window));
@@ -880,8 +879,8 @@ void ImGui_ImplSdlGL3_CreateFontsTexture()
 
 bool ImGui_ImplSdlGL3_CreateDeviceObjects()
 {
-    g_imgui_shader = new shader_opengl("./99-game/shaders/imgui_shader.vert",
-                                       "./99-game/shaders/imgui_shader.frag");
+    g_imgui_shader =
+        new shader_opengl(cfg.shader_vertex_imgui, cfg.shader_fragment_imgui);
 
     ImGui_ImplSdlGL3_CreateFontsTexture();
 

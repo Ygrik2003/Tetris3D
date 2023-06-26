@@ -1,4 +1,5 @@
 #include "audio_buffer.h"
+#include <stdexcept>
 
 audio_buffer::audio_buffer(const char*   path,
                            uint32_t      device_,

@@ -26,13 +26,13 @@ void model::load_model(const char* path)
     Assimp::Importer import;
     const aiScene*   scene =
         import.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-    import.
+    // import.ReadFileFromMemory();
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
         !scene->mRootNode)
     {
-        std::runtime_error("ERROR::ASSIMP::" +
-                           std::string(import.GetErrorString()));
+        throw std::runtime_error("ERROR::ASSIMP::" +
+                                 std::string(import.GetErrorString()));
     }
 
     process_node(scene->mRootNode, scene);

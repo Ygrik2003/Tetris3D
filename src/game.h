@@ -1,5 +1,4 @@
 #pragma once
-#include "core/config.h"
 #include "core/event.h"
 #include "core/types.h"
 #include "engine/engine_opengl.h"

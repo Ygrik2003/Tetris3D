@@ -2,16 +2,21 @@
 
 struct config
 {
-    const char* app_name = "Tetris3D";
-    const char* shader_vertex;
-    const char* shader_fragment;
-    const char* texture_block;
-    const char* texture_board;
-    const char* texture_checker_white;
-    const char* texture_checker_black;
-    double      width         = 1920 - 100;
-    double      height        = 1080 - 100;
-    bool        is_full_sreen = false;
+    const char* app_name               = "Tetris 3D";
+    const char* shader_vertex          = "./res/shaders/shader.frag";
+    const char* shader_fragment        = "./res/shaders/shader.vert";
+    const char* shader_vertex_imgui    = "./res/shaders/shader_imgui.frag";
+    const char* shader_fragment_imgui  = "./res/shaders/shader_imgui.vert";
+    const char* texture_block          = "./res/textures/texture_block.png";
+    const char* texture_board          = "./res/textures/texture_board.png";
+    const char* sound_background_music = "./res/sounds/background_music.wav";
+    const char* sound_collision        = "./res/sounds/collision.wav";
+    const char* model_board            = "./res/models/board.obj";
+    const char* model_cube             = "./res/models/cube.obj";
+
+    double width         = 1920 - 100;
+    double height        = 1080 - 100;
+    bool   is_full_sreen = true;
 
     float camera_speed_rotate = 1. / 100.;
     float camera_speed        = 0.05;

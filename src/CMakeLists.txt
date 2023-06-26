@@ -5,7 +5,7 @@ project(99-game CXX)
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
     # find_library(SDL3_LIB NAMES SDL3)
 else()
-    find_package(SDL3 REQUIRED)
+    # find_package(SDL3 REQUIRED)
     find_package(OpenGL REQUIRED)
 endif()
 
@@ -56,8 +56,7 @@ target_sources(
             objects/primitive.h)
 set_target_properties(99-engine PROPERTIES ENABLE_EXPORTS TRUE)
 target_include_directories(
-    99-engine PRIVATE ${CMAKE_SOURCE_DIR}/src
-                      ${CMAKE_SOURCE_DIR}/modules
+    99-engine PRIVATE ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/modules
                       ${CMAKE_SOURCE_DIR}/modules/SDL3/include)
 target_compile_features(99-engine PUBLIC cxx_std_17)
 
