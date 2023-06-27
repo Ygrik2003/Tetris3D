@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         if (buildAsApplication) {
-            applicationId "org.home.leo"
+            applicationId "org.ygrik.tetris3d"
         }
         minSdkVersion 18
         targetSdkVersion 34

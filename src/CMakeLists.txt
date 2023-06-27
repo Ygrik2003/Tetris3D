@@ -97,6 +97,12 @@ if(MINGW)
         COMMAND
             ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:assimp::assimp>
             $<TARGET_FILE_DIR:99-game>)
+    add_custom_command(
+        TARGET 99-game
+        POST_BUILD
+        COMMAND
+            ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:SDL3::SDL3-shared>
+            $<TARGET_FILE_DIR:99-game>)
 endif()
 
 if(MSVC)

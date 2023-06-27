@@ -285,6 +285,19 @@ int engine_opengl::initialize(config& cfg)
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
+    #if defined(__ANDROID__)
+    {
+        const SDL_DisplayMode* dispale_mode = SDL_GetCurrentDisplayMode(1);
+        if (!dispale_mode)
+        {
+            std::cout << "can't get current display mode: " << SDL_GetError()
+                      << std::endl;
+        }
+        window_size_w = dispale_mode->w;
+        window_size_h = dispale_mode->h;
+    }
+#endif
+
     if (cfg.is_full_screen)
     {
         window = static_cast<SDL_Window*>(
