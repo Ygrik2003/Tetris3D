@@ -285,7 +285,7 @@ int engine_opengl::initialize(config& cfg)
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-    #if defined(__ANDROID__)
+#if defined(__ANDROID__)
     {
         const SDL_DisplayMode* dispale_mode = SDL_GetCurrentDisplayMode(1);
         if (!dispale_mode)
