@@ -258,10 +258,10 @@ void ImGui_ImplSdlGL3_RenderDrawLists(engine* eng, ImDrawData* draw_data)
                                   pcmd->ElemCount);
 
             idx_buffer_offset += pcmd->ElemCount;
-        } // end for cmd_i
+        }
         delete vertex_buff;
         delete index_buff;
-    } // end for n
+    }
     glEnable(GL_DEPTH_TEST);
 }
 
@@ -293,8 +293,8 @@ int engine_opengl::initialize(config& cfg)
             std::cout << "can't get current display mode: " << SDL_GetError()
                       << std::endl;
         }
-        window_size_w = dispale_mode->w;
-        window_size_h = dispale_mode->h;
+        cfg.width  = dispale_mode->w;
+        cfg.height = dispale_mode->h;
     }
 #endif
 
@@ -324,6 +324,7 @@ int engine_opengl::initialize(config& cfg)
         SDL_Quit();
         return 0;
     }
+
     audio_device_spec.freq     = 48000;
     audio_device_spec.format   = SDL_AUDIO_S16LSB;
     audio_device_spec.channels = 2;
@@ -332,16 +333,9 @@ int engine_opengl::initialize(config& cfg)
     audio_device_spec.userdata = this;
 
     const int num_audio_drivers = SDL_GetNumAudioDrivers();
-    // for (int i = 0; i < num_audio_drivers; ++i)
-    // {
-    //     std::cout << "audio_driver #:" << i << " " << SDL_GetAudioDriver(i)
-    //               << '\n';
-    // }
-    // std::cout << std::flush;
 
     const char* default_audio_device_name = nullptr;
 
-    // SDL_FALSE - mean get only OUTPUT audio devices
     const int num_audio_devices = SDL_GetNumAudioDevices(SDL_FALSE);
     if (num_audio_devices > 0)
     {
@@ -379,13 +373,9 @@ int engine_opengl::initialize(config& cfg)
         SDL_PlayAudioDevice(audio_device);
     }
 
-    int gl_major_v = 2;
-    int gl_minor_v = 1;
-
-    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
-    // SDL_GL_CONTEXT_PROFILE_ES);
-    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, gl_major_v);
-    // SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, gl_minor_v);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 
     gl_context = SDL_GL_CreateContext(static_cast<SDL_Window*>(window));
 
@@ -396,12 +386,8 @@ int engine_opengl::initialize(config& cfg)
         return 0;
     }
 
-    int result = SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &gl_major_v);
-    assert(result == 0);
-    result = SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &gl_minor_v);
-    assert(result == 0);
-
-    std::clog << "OpenGL " << gl_major_v << '.' << gl_minor_v << '\n';
+    int swap_applyed = SDL_GL_SetSwapInterval(0);
+    assert(swap_applyed == 0);
 
     if (gladLoadGLES2Loader(load_gl_func) == 0)
     {
@@ -437,6 +423,9 @@ int engine_opengl::initialize(config& cfg)
 
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
+
+    glViewport(0, 0, cfg.width, cfg.height);
+    GL_CHECK_ERRORS()
 
     if (!ImGui_ImplSdlGL3_Init(static_cast<SDL_Window*>(window), _config))
     {
