@@ -5,53 +5,53 @@
 #include <cstdlib>
 #include <iostream>
 
-//class android_redirected_buf : public std::streambuf
-//{
-//public:
-//    android_redirected_buf() = default;
-//
-//private:
-//    // This android_redirected_buf buffer has no buffer. So every character
-//    // "overflows" and can be put directly into the teed buffers.
-//    int overflow(int c) override
-//    {
-//        if (c == EOF)
-//        {
-//            return !EOF;
-//        }
-//        else
-//        {
-//            if (c == '\n')
-//            {
-//#ifdef __ANDROID__
-//                // android log function add '\n' on every print itself
-//                __android_log_print(
-//                    ANDROID_LOG_ERROR, "OM", "%s", message.c_str());
-//#else
-//                std::printf("%s\n", message.c_str()); // TODO test only
-//#endif
-//                message.clear();
-//            }
-//            else
-//            {
-//                message.push_back(static_cast<char>(c));
-//            }
-//            return c;
-//        }
-//    }
-//
-//    int sync() override { return 0; }
-//
-//    std::string message;
-//};
+class android_redirected_buf : public std::streambuf
+{
+public:
+    android_redirected_buf() = default;
+
+private:
+    // This android_redirected_buf buffer has no buffer. So every character
+    // "overflows" and can be put directly into the teed buffers.
+    int overflow(int c) override
+    {
+        if (c == EOF)
+        {
+            return !EOF;
+        }
+        else
+        {
+            if (c == '\n')
+            {
+#ifdef __ANDROID__
+                // android log function add '\n' on every print itself
+                __android_log_print(
+                    ANDROID_LOG_ERROR, "GameActivity", "%s", message.c_str());
+#else
+                std::printf("%s\n", message.c_str()); // TODO test only
+#endif
+                message.clear();
+            }
+            else
+            {
+                message.push_back(static_cast<char>(c));
+            }
+            return c;
+        }
+    }
+
+    int sync() override { return 0; }
+
+    std::string message;
+};
 
 int main(int argc, char* argv[])
 {
-//    android_redirected_buf logcat;
+    android_redirected_buf logcat;
 
-//    std::cout.rdbuf(&logcat);
-//    std::cerr.rdbuf(&logcat);
-//    std::clog.rdbuf(&logcat);
+    std::cout.rdbuf(&logcat);
+    std::cerr.rdbuf(&logcat);
+    std::clog.rdbuf(&logcat);
 
     config      cfg;
     game_tetris my_game;

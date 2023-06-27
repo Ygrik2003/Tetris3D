@@ -1,14 +1,15 @@
-// #version 330
+#version 300 es
+precision mediump float;
 
-attribute vec2 i_position;
-attribute vec2 i_tex_coord;
-attribute vec4 i_color;
+layout(location = 0) in vec2 i_position;
+layout(location = 2) in vec2 i_tex_coord;
+layout(location = 3) in vec4 i_color;
 
 uniform float width;
 uniform float height;
 
-varying vec2 Frag_UV;
-varying vec4 Frag_Color;
+out vec2 Frag_UV;
+out vec4 Frag_Color;
 
 void main()
 {

@@ -312,7 +312,7 @@ int engine_opengl::initialize(config& cfg)
             cfg.app_name, cfg.width, cfg.height, SDL_WINDOW_OPENGL));
     }
     int w, h;
-    SDL_GetWindowSize(static_cast<SDL_Window*>(window), &w, &h);
+    SDL_GetWindowSizeInPixels(static_cast<SDL_Window*>(window), &w, &h);
     cfg.width  = w;
     cfg.height = h;
 
@@ -373,7 +373,7 @@ int engine_opengl::initialize(config& cfg)
         SDL_PlayAudioDevice(audio_device);
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 
@@ -514,6 +514,7 @@ void engine_opengl::render_triangle(const triangle<vertex3d>& tr)
     bind_normal<vertex3d>();
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    GL_CHECK_ERRORS()
 }
 
 void engine_opengl::render_triangle(const triangle<vertex3d_colored>& tr)
@@ -528,6 +529,7 @@ void engine_opengl::render_triangle(const triangle<vertex3d_colored>& tr)
     bind_colors<vertex3d_colored>();
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    GL_CHECK_ERRORS()
 }
 
 void engine_opengl::render_triangle(const triangle<vertex3d_textured>& tr)
@@ -542,6 +544,7 @@ void engine_opengl::render_triangle(const triangle<vertex3d_textured>& tr)
     bind_texture_coords<vertex3d_textured>();
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    GL_CHECK_ERRORS()
 }
 
 void engine_opengl::render_triangle(
@@ -558,6 +561,7 @@ void engine_opengl::render_triangle(
     bind_colors<vertex3d_colored_textured>();
 
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    GL_CHECK_ERRORS()
 }
 
 void engine_opengl::render_triangles(vertex_buffer<vertex3d>* vertexes,
@@ -575,7 +579,6 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d>* vertexes,
 
     glDrawElements(
         GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
-
     GL_CHECK_ERRORS()
 }
 void engine_opengl::render_triangles(vertex_buffer<vertex3d_colored>* vertexes,
@@ -594,7 +597,6 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d_colored>* vertexes,
 
     glDrawElements(
         GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
-
     GL_CHECK_ERRORS()
 }
 void engine_opengl::render_triangles(vertex_buffer<vertex3d_textured>* vertexes,
@@ -615,7 +617,6 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d_textured>* vertexes,
 
     glDrawElements(
         GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
-
     GL_CHECK_ERRORS()
 }
 
@@ -637,7 +638,6 @@ void engine_opengl::render_triangles(
 
     glDrawElements(
         GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
-
     GL_CHECK_ERRORS()
 }
 
@@ -679,10 +679,6 @@ void engine_opengl::swap_buffers()
 
 texture* engine_opengl::load_texture(uint32_t index, const char* path)
 {
-    // glActiveTexture(GL_TEXTURE0 + index);
-    // GL_CHECK_ERRORS()
-    // active_shader->set_uniform1("u_texture", index);
-
     texture* tex = new texture_opengl(path);
     tex->bind();
 
@@ -807,16 +803,15 @@ void engine_opengl::set_relative_mouse_mode(bool state)
         SDL_SetRelativeMouseMode(SDL_FALSE);
 }
 
-void engine_opengl::play_sound(const char* path)
+void engine_opengl::play_sound(const char* path, bool is_looped)
 {
     std::lock_guard<std::mutex> lock(audio_mutex);
 
     audio_buffer* audio_buff =
-        new audio_buffer(path, audio_device, audio_device_spec);
+        new audio_buffer(path, audio_device, audio_device_spec, is_looped);
 
     audio_buff->current_index = 0;
     audio_buff->is_playing    = true;
-    audio_buff->is_looped     = false;
 
     audio_output.push_back(audio_buff);
 }

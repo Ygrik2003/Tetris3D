@@ -7,7 +7,10 @@
 class audio_buffer
 {
 public:
-    audio_buffer(const char* path, uint32_t device, SDL_AudioSpec audio_spec);
+    audio_buffer(const char*   path,
+                 uint32_t      device,
+                 SDL_AudioSpec audio_spec,
+                 bool          is_looped);
     ~audio_buffer();
 
     // std::unique_ptr<uint8_t*> tmp_buf;
