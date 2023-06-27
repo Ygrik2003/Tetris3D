@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         if (buildAsApplication) {
-            applicationId "org.ygrik.tetris3d"
+            applicationId "org.home.tetris3d"
         }
         minSdkVersion 18
         targetSdkVersion 34
@@ -54,7 +54,7 @@ android {
     lintOptions {
         abortOnError false
     }
-    namespace 'org.home.leo'
+    namespace 'org.home.tetris3d'
 
     if (buildAsLibrary) {
         libraryVariants.all { variant ->
