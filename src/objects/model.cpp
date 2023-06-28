@@ -42,7 +42,7 @@ void model::load_model(const char* path)
 
     process_node(scene->mRootNode, scene);
 
-    delete file;
+    //delete file;
 }
 
 void model::process_node(aiNode* node, const aiScene* scene)

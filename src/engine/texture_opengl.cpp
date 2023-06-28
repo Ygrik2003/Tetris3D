@@ -50,7 +50,7 @@ texture_opengl::texture_opengl(const char* path)
     }
 
     gen_texture_from_pixels(image.data(), w, h);
-    delete file;
+    //delete file;
 }
 
 texture_opengl::texture_opengl(const void*  pixels,

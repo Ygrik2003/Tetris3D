@@ -91,7 +91,7 @@ void shader_opengl::load(const char* path, int type)
         glDeleteShader(shader);
         GL_CHECK_ERRORS()
 
-        delete file;
+        //delete file;
 
         throw std::runtime_error(log.data());
     }
@@ -101,7 +101,7 @@ void shader_opengl::load(const char* path, int type)
     glDeleteShader(shader);
     GL_CHECK_ERRORS()
 
-    delete file;
+    //delete file;
 }
 
 void shader_opengl::set_uniform1(const char* name, int value)
