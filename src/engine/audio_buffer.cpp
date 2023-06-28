@@ -3,8 +3,10 @@
 
 audio_buffer::audio_buffer(const char*   path,
                            uint32_t      device_,
-                           SDL_AudioSpec audio_spec)
+                           SDL_AudioSpec audio_spec,
+                           bool          is_looped_)
     : device(device_)
+    , is_looped(is_looped_)
 {
     SDL_RWops* file = SDL_RWFromFile(path, "rb");
     if (file == nullptr)

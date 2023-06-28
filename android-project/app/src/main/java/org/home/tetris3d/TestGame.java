@@ -1,4 +1,4 @@
-package org.home.leo;
+package org.home.tetris3d;
 
 import org.libsdl.app.SDLActivity;
 

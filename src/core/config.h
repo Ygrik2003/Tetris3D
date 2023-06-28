@@ -2,15 +2,11 @@
 
 struct config
 {
-    const char* app_name = "Tetris 3D";
-    const char* shader_vertex =
-        "android-project/app/src/main/assets/res/shaders/shader.vert";
-    const char* shader_fragment =
-        "android-project/app/src/main/assets/res/shaders/shader.frag";
-    const char* shader_vertex_imgui =
-        "android-project/app/src/main/assets/res/shaders/shader_imgui.vert";
-    const char* shader_fragment_imgui =
-        "android-project/app/src/main/assets/res/shaders/shader_imgui.frag";
+    const char* app_name               = "Tetris 3D";
+    const char* shader_vertex          = "res/shaders/shader.vert";
+    const char* shader_fragment        = "res/shaders/shader.frag";
+    const char* shader_vertex_imgui    = "res/shaders/shader_imgui.vert";
+    const char* shader_fragment_imgui  = "res/shaders/shader_imgui.frag";
     const char* texture_block          = "res/textures/texture_block.png";
     const char* texture_board          = "res/textures/texture_board.png";
     const char* sound_background_music = "res/sounds/background_music.wav";

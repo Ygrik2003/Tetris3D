@@ -1,15 +1,18 @@
+#version 300 es
 precision mediump float;
 
-varying vec3 v_position;
-varying vec2 v_tex_coord;
-varying vec3 v_normal;
-varying vec3 camera_pos;
+in vec3 v_position;
+in vec2 v_tex_coord;
+in vec3 v_normal;
+in vec3 camera_pos;
 
 uniform sampler2D u_texture;
 
 const vec3  light_color      = vec3(1., 1., 1.);
 const float ambient_strength = 0.3f;
 const vec3  ambient          = ambient_strength * light_color;
+
+out vec4 o_color;
 
 void main()
 {
@@ -20,7 +23,7 @@ void main()
     else
         v_normal_facing = v_normal;
 
-    vec4 color = texture2D(u_texture, v_tex_coord);
+    vec4 color = texture(u_texture, v_tex_coord);
 
     vec3  light_dir = normalize(light_pos - v_position);
     float diff      = max(dot(v_normal_facing, light_dir), 0.);
@@ -34,5 +37,5 @@ void main()
 
     vec3 result = (ambient + diffuse) * color.xyz;
 
-    gl_FragColor = vec4(result, color.w);
+    o_color = vec4(result, color.w);
 }

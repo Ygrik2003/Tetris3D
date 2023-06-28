@@ -1,14 +1,15 @@
+#version 300 es
 precision mediump float;
 
-attribute vec3 i_position;
-attribute vec3 i_normal;
-attribute vec2 i_tex_coord;
-attribute vec4 i_color;
+layout(location = 0) in vec3 i_position;
+layout(location = 1) in vec3 i_normal;
+layout(location = 2) in vec2 i_tex_coord;
+layout(location = 3) in vec4 i_color;
 
-varying vec3 v_position;
-varying vec3 v_normal;
-varying vec2 v_tex_coord;
-varying vec3 camera_pos;
+out vec3 v_position;
+out vec3 v_normal;
+out vec2 v_tex_coord;
+out vec3 camera_pos;
 
 uniform vec3  u_normal;
 uniform float u_alpha;            // For animation
