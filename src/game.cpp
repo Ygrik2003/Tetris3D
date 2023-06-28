@@ -238,7 +238,7 @@ void game_tetris::draw_ui()
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
 
-    ImGui::Text("Score: %d", score);
+    ImGui::Text("Score: %zu", score);
 
     ImGui::End();
 

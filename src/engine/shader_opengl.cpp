@@ -23,6 +23,21 @@ shader_opengl::shader_opengl(const char* path_to_vertex,
     glLinkProgram(program);
     GL_CHECK_ERRORS()
 
+    GLint isLinked = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+    if (isLinked == GL_FALSE)
+    {
+        GLint maxLength = 0;
+        glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+
+        std::vector<GLchar> infoLog(maxLength);
+        glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+
+        glDeleteProgram(program);
+
+        throw std::runtime_error(infoLog.data());
+    }
+
     glBindAttribLocation(program, 0, "i_position");
     GL_CHECK_ERRORS()
 
