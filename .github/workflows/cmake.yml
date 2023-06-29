@@ -1,4 +1,4 @@
-name: CMake
+name: Test game on Windows and Ubuntu
 
 on:
   push:
@@ -47,6 +47,6 @@ jobs:
         cmake --preset CMakePresets.json --preset=ninja-release
         cmake --build --preset CMakePresets.json --preset=ninja-release
 
-    - name: Gamse
+    - name: Tetris3D
       # Build your program with the given configuration
-      run: ./build/ninja-release/src/99-game      
+      run: ./build/ninja-release/src/99-game.exe      
