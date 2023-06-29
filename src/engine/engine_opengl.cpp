@@ -13,7 +13,7 @@ void ImGui_ImplSdlGL3_Shutdown();
 void ImGui_ImplSdlGL3_InvalidateDeviceObjects();
 bool ImGui_ImplSdlGL3_CreateDeviceObjects(config& cfg);
 void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window);
-bool ImGui_ImplSdlGL3_ProcessEvent(const SDL_Event* event);
+bool ImGui_ImplSdlGL3_ProcessEvent(const SDL_Event* event, config& cfg);
 void ImGui_ImplSdlGL3_RenderDrawLists(engine* eng, ImDrawData* draw_data);
 
 static const char* get_sound_format_name(uint16_t format_value)
@@ -285,7 +285,10 @@ int engine_opengl::initialize(config& cfg)
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-#if defined(__ANDROID__)
+    std::cout << "Window size: (" << cfg.width << " " << cfg.height << ")"
+              << std::endl;
+
+    if (cfg.is_full_screen)
     {
         const SDL_DisplayMode* dispale_mode = SDL_GetCurrentDisplayMode(1);
         if (!dispale_mode)
@@ -295,11 +298,7 @@ int engine_opengl::initialize(config& cfg)
         }
         cfg.width  = dispale_mode->w;
         cfg.height = dispale_mode->h;
-    }
-#endif
 
-    if (cfg.is_full_screen)
-    {
         window = static_cast<SDL_Window*>(
             SDL_CreateWindow(cfg.app_name,
                              cfg.width,
@@ -308,13 +307,27 @@ int engine_opengl::initialize(config& cfg)
     }
     else
     {
+#ifdef ANDROID
+        const SDL_DisplayMode* dispale_mode = SDL_GetCurrentDisplayMode(1);
+        if (!dispale_mode)
+        {
+            std::cout << "can't get current display mode: " << SDL_GetError()
+                      << std::endl;
+        }
+        cfg.width  = dispale_mode->w;
+        cfg.height = dispale_mode->h;
+#endif
         window = static_cast<SDL_Window*>(SDL_CreateWindow(
             cfg.app_name, cfg.width, cfg.height, SDL_WINDOW_OPENGL));
     }
+    std::cout << "Window size: (" << cfg.width << " " << cfg.height << ")"
+              << std::endl;
     int w, h;
     SDL_GetWindowSizeInPixels(static_cast<SDL_Window*>(window), &w, &h);
     cfg.width  = w;
     cfg.height = h;
+    std::cout << "Window size: (" << cfg.width << " " << cfg.height << ")"
+              << std::endl;
 
     _config = cfg;
 
@@ -451,53 +464,59 @@ bool engine_opengl::event_keyboard(event& e)
 
     while (SDL_PollEvent(&sdl_event))
     {
-        ImGui_ImplSdlGL3_ProcessEvent(&sdl_event);
-        if (sdl_event.type == SDL_EVENT_QUIT)
+        ImGui_ImplSdlGL3_ProcessEvent(&sdl_event, this->_config);
+        switch (sdl_event.type)
         {
-            e.action.quit = true;
-            is_event      = true;
-        }
-        else if (sdl_event.type == SDL_EVENT_KEY_DOWN)
-        {
-            // clang-format off
+            case SDL_EVENT_QUIT:
+                e.action.quit = true;
+                is_event      = true;
+                break;
+
+            case SDL_EVENT_KEY_DOWN:
+
+                // clang-format off
             if (sdl_event.key.keysym.sym == SDLK_w) e.keyboard.w_clicked         = 1;
             if (sdl_event.key.keysym.sym == SDLK_s) e.keyboard.s_clicked         = 1;
             if (sdl_event.key.keysym.sym == SDLK_a) e.keyboard.a_clicked         = 1;
             if (sdl_event.key.keysym.sym == SDLK_d) e.keyboard.d_clicked         = 1;
             if (sdl_event.key.keysym.sym == SDLK_SPACE) e.keyboard.space_clicked = 1;
-            // clang-format on
-            is_event = true;
-        }
-        else if (sdl_event.type == SDL_EVENT_KEY_UP)
-        {
-            // clang-format off
+                // clang-format on
+                is_event = true;
+                break;
+
+            case SDL_EVENT_KEY_UP:
+
+                // clang-format off
             if (sdl_event.key.keysym.sym == SDLK_w) e.keyboard.w_released         = 1;
             if (sdl_event.key.keysym.sym == SDLK_s) e.keyboard.s_released         = 1;
             if (sdl_event.key.keysym.sym == SDLK_a) e.keyboard.a_released         = 1;
             if (sdl_event.key.keysym.sym == SDLK_d) e.keyboard.d_released         = 1;
             if (sdl_event.key.keysym.sym == SDLK_SPACE) e.keyboard.space_released = 1;
-            // clang-format on
-            is_event = true;
-        }
-        else if (sdl_event.type == SDL_EVENT_MOUSE_MOTION)
-        {
-            e.motion.x = sdl_event.motion.xrel;
-            e.motion.y = sdl_event.motion.yrel;
-            is_event   = true;
-        }
-        else if (sdl_event.type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-        {
-            // clang-format off
-            if (sdl_event.button.button == SDL_BUTTON_LEFT) e.mouse.left_cliked = 1;
-            // clang-format on
-            is_event = true;
-        }
-        else if (sdl_event.type == SDL_EVENT_MOUSE_BUTTON_UP)
-        {
-            // clang-format off
-            if (sdl_event.button.button == SDL_BUTTON_LEFT) e.mouse.left_released = 1;
-            // clang-format on
-            is_event = true;
+                // clang-format on
+                is_event = true;
+                break;
+
+            case SDL_EVENT_MOUSE_MOTION:
+
+                e.motion.x_rel = sdl_event.motion.xrel;
+                e.motion.y_rel = sdl_event.motion.yrel;
+                e.motion.x     = sdl_event.motion.x;
+                e.motion.y     = sdl_event.motion.y;
+                is_event       = true;
+                break;
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+                // clang-format off
+                if (sdl_event.button.button == SDL_BUTTON_LEFT) e.mouse.left_cliked = 1;
+                // clang-format on
+                is_event = true;
+                break;
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+
+                // clang-format off
+                if (sdl_event.button.button == SDL_BUTTON_LEFT) e.mouse.left_released = 1;
+                // clang-format on
+                is_event = true;
+                break;
         }
     }
     return is_event;
@@ -816,11 +835,12 @@ void engine_opengl::play_sound(const char* path, bool is_looped)
     audio_output.push_back(audio_buff);
 }
 
-bool ImGui_ImplSdlGL3_ProcessEvent(const SDL_Event* event)
+bool ImGui_ImplSdlGL3_ProcessEvent(const SDL_Event* event, config& cfg)
 {
-    ImGuiIO& io = ImGui::GetIO();
+    static ImGuiIO& io = ImGui::GetIO();
     switch (event->type)
     {
+#ifndef ANDROID
         case SDL_EVENT_MOUSE_WHEEL:
         {
             if (event->wheel.y > 0)
@@ -839,6 +859,17 @@ bool ImGui_ImplSdlGL3_ProcessEvent(const SDL_Event* event)
                 g_MousePressed[2] = true;
             return true;
         }
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+        {
+            if (event->button.button == SDL_BUTTON_LEFT)
+                g_MousePressed[0] = false;
+            if (event->button.button == SDL_BUTTON_RIGHT)
+                g_MousePressed[1] = false;
+            if (event->button.button == SDL_BUTTON_MIDDLE)
+                g_MousePressed[2] = false;
+            return true;
+        }
+#endif
         case SDL_EVENT_TEXT_INPUT:
         {
             io.AddInputCharactersUTF8(event->text.text);
@@ -853,6 +884,24 @@ bool ImGui_ImplSdlGL3_ProcessEvent(const SDL_Event* event)
             io.KeyCtrl       = ((SDL_GetModState() & SDL_KMOD_CTRL) != 0);
             io.KeyAlt        = ((SDL_GetModState() & SDL_KMOD_ALT) != 0);
             io.KeySuper      = ((SDL_GetModState() & SDL_KMOD_GUI) != 0);
+            return true;
+        }
+        case SDL_EVENT_FINGER_UP:
+        case SDL_EVENT_FINGER_DOWN:
+        {
+            int mouse_button = 0;
+
+            ImVec2 mouse_pos((float)event->tfinger.x * cfg.width,
+                             (float)event->tfinger.y * cfg.height);
+            io.AddMousePosEvent(mouse_pos.x, mouse_pos.y);
+            io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
+            io.AddMouseButtonEvent(mouse_button,
+                                   event->type == SDL_EVENT_FINGER_DOWN);
+            if (event->type == SDL_EVENT_FINGER_DOWN)
+                io.MouseDown[mouse_button] = true;
+            else
+                io.MouseDown[mouse_button] = false;
+
             return true;
         }
     }
@@ -897,8 +946,8 @@ bool ImGui_ImplSdlGL3_Init(SDL_Window* window, config& cfg)
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard
-    // Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable
+    // Keyboard Controls
 
     ImGui::StyleColorsDark();
 

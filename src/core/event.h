@@ -22,6 +22,8 @@ struct event
     {
         float x;
         float y;
+        float x_rel;
+        float y_rel;
     } motion;
 
     struct event_keyboard

@@ -48,14 +48,11 @@ struct column
     /// @param pos position, start from which cells was falling
     // clang-format on
 
-    void   operator|=(const uint32_t& mask) { colors |= mask; }
-    void   operator&=(const uint32_t& mask) { colors &= mask; }
-    void   operator|=(const column& mask) { colors |= mask.colors; }
-    void   operator&=(const column& mask) { colors &= mask.colors; }
-    column operator&(const uint32_t& mask)
-    {
-        return column{ colors & mask };
-    }
+    void     operator|=(const uint32_t& mask) { colors |= mask; }
+    void     operator&=(const uint32_t& mask) { colors &= mask; }
+    void     operator|=(const column& mask) { colors |= mask.colors; }
+    void     operator&=(const column& mask) { colors &= mask.colors; }
+    column   operator&(const uint32_t& mask) { return column{ colors & mask }; }
     uint32_t operator~() { return ~colors; }
 
     void move_down_over(uint8_t pos)
@@ -138,6 +135,7 @@ private:
 
     texture* texture_board = nullptr;
     texture* texture_block = nullptr;
+    image    image_button_control;
 
     double camera_angle = -M_PI / 2;
     double view_height  = 1.;
@@ -151,4 +149,17 @@ private:
         uint8_t is_moving : 1;
 
     } state;
+
+    int window_score_width;
+    int window_score_height;
+    int window_score_x;
+    int window_score_y;
+    int window_control_width;
+    int window_control_height;
+    int window_control_x;
+    int window_control_y;
+    int window_rotate_width;
+    int window_rotate_height;
+    int window_rotate_x;
+    int window_rotate_y;
 };

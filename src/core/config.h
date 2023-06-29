@@ -9,6 +9,7 @@ struct config
     const char* shader_fragment_imgui  = "res/shaders/shader_imgui.frag";
     const char* texture_block          = "res/textures/texture_block.png";
     const char* texture_board          = "res/textures/texture_board.png";
+    const char* texture_button_control = "res/textures/texture_board.png";
     const char* sound_background_music = "res/sounds/background_music.wav";
     const char* sound_collision        = "res/sounds/collision.wav";
     const char* model_board            = "res/models/board.obj";

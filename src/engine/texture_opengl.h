@@ -2,6 +2,13 @@
 #include "core/types.h"
 #include "texture.h"
 
+#include <vector>
+
+void get_pixels_from_png(const char*             path,
+                         std::vector<std::byte>& image,
+                         unsigned long&          w,
+                         unsigned long&          h);
+
 class texture_opengl : public texture
 {
 public:

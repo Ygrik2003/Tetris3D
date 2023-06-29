@@ -335,3 +335,10 @@ struct membuff
 };
 
 membuff* load_file_to_memory(const char* path);
+
+struct image
+{
+    void*         ptr = nullptr;
+    unsigned long w;
+    unsigned long h;
+};

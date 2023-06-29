@@ -3,7 +3,7 @@
 
 game_tetris::game_tetris()
 {
-    state.is_started = 1;
+    state.is_started = 0;
     state.is_quit    = 0;
     state.is_rotated = 0;
     state.is_moving  = 0;
@@ -20,13 +20,10 @@ game_tetris::game_tetris()
     }
 }
 
-int game_tetris::initialize(config cfg)
+int game_tetris::initialize(config _cfg)
 {
 
-    this->cfg = cfg;
-
-    uniforms.width  = cfg.width;
-    uniforms.height = cfg.height;
+    cfg = _cfg;
 
     cam = new camera(cfg.camera_speed);
     cam->uniform_link(uniforms);
@@ -34,8 +31,11 @@ int game_tetris::initialize(config cfg)
     my_engine = new engine_opengl();
 
     my_engine->set_uniform(uniforms);
-    if (!my_engine->initialize(this->cfg))
+    if (!my_engine->initialize(cfg))
         return -1;
+
+    uniforms.width  = cfg.width;
+    uniforms.height = cfg.height;
 
     shader_scene = new shader_opengl(cfg.shader_vertex, cfg.shader_fragment);
     my_engine->set_shader(shader_scene);
@@ -43,9 +43,25 @@ int game_tetris::initialize(config cfg)
     texture_block = my_engine->load_texture(1, cfg.texture_block);
     texture_board = my_engine->load_texture(2, cfg.texture_board);
 
+    // get_pixels_from_png(
+    //     cfg.texture_button_control, image_button_control.ptr, w, h);
+
     add_figure(figure_board, texture_board);
-    add_primitive();
     my_engine->play_sound(cfg.sound_background_music, true);
+
+    window_score_width  = 0.1 * cfg.width;
+    window_score_height = 0.03 * cfg.height;
+    window_score_x      = 10;
+    window_score_y      = 10;
+
+    window_control_width  = 0.30 * cfg.width;
+    window_control_height = 0.35 * cfg.height;
+    window_control_x      = 20;
+    window_control_y      = 0.6 * cfg.height;
+    window_rotate_width   = 0.2 * cfg.width;
+    window_rotate_height  = 0.95 * cfg.height;
+    window_rotate_x       = 0.8 * cfg.width - 10;
+    window_rotate_y       = 10;
 
     return 1;
 };
@@ -73,17 +89,29 @@ bool game_tetris::event_listener(event& e)
                 state.is_rotated = false;
                 state.is_moving  = false;
             }
-            if (e.motion.x && state.is_rotated)
+            if (e.motion.x_rel && state.is_rotated)
             {
-                camera_angle += e.motion.x * M_PI / 300;
+#ifdef ANDROID
+                if (e.motion.x > window_control_width &&
+                    e.motion.x < window_rotate_x)
+#endif
+                    camera_angle += e.motion.x_rel * M_PI / 300;
             }
-            if (e.motion.y && state.is_rotated)
+            if (e.motion.y_rel && state.is_rotated)
             {
-                view_height += e.motion.y / 50;
-                if (view_height < 1.)
-                    view_height = 1.;
-                if (view_height > 1.6)
-                    view_height = 1.6;
+#ifdef ANDROID
+                if (e.motion.x > window_control_width &&
+                    e.motion.x < window_rotate_x)
+                {
+#endif
+                    view_height += e.motion.y_rel / 50;
+                    if (view_height < 1.)
+                        view_height = 1.;
+                    if (view_height > 1.6)
+                        view_height = 1.6;
+#ifdef ANDROID
+                }
+#endif
             }
 
             if (e.keyboard.w_clicked)
@@ -180,7 +208,9 @@ void game_tetris::render()
     {
         shader_scene->use();
         render_scene();
+#ifdef ANDROID
         draw_ui();
+#endif
     }
     ImGui::Render();
     my_engine->swap_buffers();
@@ -220,21 +250,6 @@ void game_tetris::draw_menu()
 }
 void game_tetris::draw_ui()
 {
-    static const int window_score_width  = 0.1 * cfg.width;
-    static const int window_score_height = 0.03 * cfg.height;
-    static const int window_score_x      = 10;
-    static const int window_score_y      = 10;
-
-    static const int window_control_width  = 0.30 * cfg.width;
-    static const int window_control_height = 0.35 * cfg.height;
-    static const int window_control_x      = 20;
-    static const int window_control_y      = 0.6 * cfg.height;
-
-    static const int window_rotate_width  = 0.2 * cfg.width;
-    static const int window_rotate_height = 0.95 * cfg.height;
-    static const int window_rotate_x      = 0.8 * cfg.width - 10;
-    static const int window_rotate_y      = 10;
-
     static const ImVec2 button_rotate_size =
         ImVec2(window_rotate_width - 20, window_rotate_height / 3 - 10);
     static const ImVec2 button_control_size =
@@ -263,19 +278,21 @@ void game_tetris::draw_ui()
                      ImGuiWindowFlags_NoBackground);
 
     ImGui::SetCursorPos(ImVec2(button_control_size.x + 15, 5));
+
+    // if (ImGui::ImageButton())
     if (ImGui::Button("Forvard", button_control_size))
     {
         move_cell(direction::forward);
     }
     ImGui::SetCursorPos(ImVec2(7, button_control_size.y + 15));
-    if (ImGui::Button("Backward", button_control_size))
-    {
-        move_cell(direction::backward);
-    }
-    ImGui::SameLine();
     if (ImGui::Button("Left", button_control_size))
     {
         move_cell(direction::left);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button("Backward", button_control_size))
+    {
+        move_cell(direction::backward);
     }
     ImGui::SameLine();
     if (ImGui::Button("Right", button_control_size))
@@ -357,6 +374,7 @@ void game_tetris::render_scene()
 void game_tetris::start_game()
 {
     state.is_started = ~state.is_started;
+    add_primitive();
 }
 
 void game_tetris::add_primitive()
