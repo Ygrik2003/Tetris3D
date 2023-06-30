@@ -385,11 +385,11 @@ int engine_opengl::initialize(config& cfg)
 
         SDL_PlayAudioDevice(audio_device);
     }
-
+#ifndef _WIN32
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-
+#endif
     gl_context = SDL_GL_CreateContext(static_cast<SDL_Window*>(window));
 
     if (gl_context == nullptr)
