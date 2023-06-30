@@ -73,7 +73,7 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
 else()
     target_link_libraries(
         99-engine
-        PUBLIC SDL3::SDL3-shared
+        PUBLIC SDL3::SDL3-static
                OpenGL::GL
                imgui
                assimp::assimp)

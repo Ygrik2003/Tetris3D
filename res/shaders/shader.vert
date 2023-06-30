@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
 layout(location = 0) in vec3 i_position;
 layout(location = 1) in vec3 i_normal;
@@ -20,7 +20,7 @@ uniform vec3  u_translate_obj;    // Translate object
 uniform vec3  u_translate_camera; // Translate camera
 uniform vec3  u_scale_obj;        // Scale object
 
-const float front = 0.01f;
+const float front = 0.1f;
 const float back  = 30.f;
 float       fovy  = 3.14159 / 2.;
 
