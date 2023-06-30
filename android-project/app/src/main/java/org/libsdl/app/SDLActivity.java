@@ -277,7 +277,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             // "SDL3_mixer",
             // "SDL3_net",
             // "SDL3_ttf",
-                "assimpd",
+               // "assimpd",
                 "99-engined",
                 "99-gamed",
         };
