@@ -360,5 +360,5 @@ bool game_tetris::move_active_cell(direction dir)
 
 void game_tetris::check_layer()
 {
-   
+    1;
 }
