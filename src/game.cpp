@@ -11,13 +11,7 @@ game_tetris::game_tetris()
     figure_board = model(cfg.model_board).get_figure();
     figure_cube  = model(cfg.model_cube).get_figure();
 
-    buffer_z.resize(cells_max * cells_max);
 
-    columns.resize(cells_max * cells_max * cells_max_z);
-    for (column& col : columns)
-    {
-        col = column{ 0 };
-    }
 }
 
 int game_tetris::initialize(config _cfg)
@@ -42,9 +36,6 @@ int game_tetris::initialize(config _cfg)
 
     texture_block = my_engine->load_texture(1, cfg.texture_block);
     texture_board = my_engine->load_texture(2, cfg.texture_board);
-
-    // get_pixels_from_png(
-    //     cfg.texture_button_control, image_button_control.ptr, w, h);
 
     add_figure(figure_board, texture_board);
     my_engine->play_sound(cfg.sound_background_music, true);
@@ -116,19 +107,19 @@ bool game_tetris::event_listener(event& e)
 
             if (e.keyboard.w_clicked)
             {
-                move_cell(direction::forward);
+                move_active_cell(direction::forward);
             }
             if (e.keyboard.s_clicked)
             {
-                move_cell(direction::backward);
+                move_active_cell(direction::backward);
             }
             if (e.keyboard.a_clicked)
             {
-                move_cell(direction::left);
+                move_active_cell(direction::left);
             }
             if (e.keyboard.d_clicked)
             {
-                move_cell(direction::right);
+                move_active_cell(direction::right);
             }
 
             // Free Camera
@@ -174,27 +165,6 @@ void game_tetris::update()
     if ((timer.now() - last_time_update).count() < delay * 1e9)
         return;
     last_time_update = timer.now();
-
-    bool is_stop_falling = false;
-
-    for (int x = 0; x < cells_max; x++)
-    {
-        for (int y = 0; y < cells_max; y++)
-        {
-            if (get_cell_color(x, y, get_column_z(x, y)))
-            {
-                update_buffer_z();
-                check_layer();
-                add_primitive();
-                my_engine->play_sound(cfg.sound_collision, false);
-                is_stop_falling = true;
-                break;
-            }
-            get_column(x, y).move_down_over(get_column_z(x, y));
-        }
-        if (is_stop_falling)
-            break;
-    }
 }
 
 void game_tetris::render()
@@ -282,22 +252,22 @@ void game_tetris::draw_ui()
     // if (ImGui::ImageButton())
     if (ImGui::Button("Forvard", button_control_size))
     {
-        move_cell(direction::forward);
+        move_active_cell(direction::forward);
     }
     ImGui::SetCursorPos(ImVec2(7, button_control_size.y + 15));
     if (ImGui::Button("Left", button_control_size))
     {
-        move_cell(direction::left);
+        move_active_cell(direction::left);
     }
     ImGui::SameLine();
     if (ImGui::Button("Backward", button_control_size))
     {
-        move_cell(direction::backward);
+        move_active_cell(direction::backward);
     }
     ImGui::SameLine();
     if (ImGui::Button("Right", button_control_size))
     {
-        move_cell(direction::right);
+        move_active_cell(direction::right);
     }
 
     ImGui::End();
@@ -345,29 +315,9 @@ void game_tetris::render_scene()
     index_buffer* index_buff = new index_buffer(
         figure_cube->get_indexes().data(), figure_cube->get_indexes().size());
 
-    for (int x = 0; x < cells_max; x++)
-        for (int y = 0; y < cells_max; y++)
-        {
-            for (uint16_t z = 0; z < column_count_cells; z++)
-            {
-                if (!get_column(x, y).get_z(z))
-                    continue;
-                figure_cube->set_translate(
-                    vector3d(-1. / 2. + (x + 0.5) / cells_max,
-                             (z + 0.5) / cells_max,
-                             -1. / 2. + (y + 0.5) / cells_max));
-                figure_cube->set_texture(texture_block);
-                figure_cube->uniform_link(uniforms);
+    //render
 
-                my_engine->reload_uniform();
-                my_engine->render_triangles(vertex_buff,
-                                            index_buff,
-                                            figure_cube->get_texture(),
-                                            0,
-                                            index_buff->size());
-            }
-        }
-
+   
     delete vertex_buff;
     delete index_buff;
 }
@@ -382,10 +332,8 @@ void game_tetris::add_primitive()
     static float x = 0;
     static float y = 0;
 
-    set_cell_color(x, y, cells_max_z, 1);
-    // set_cell_color(x + 1, y, cells_max_z, 1);
-    // set_cell_color(x + 2, y, cells_max_z, 1);
-    // set_cell_color(x + 1, y, cells_max_z - 1, 1);
+    
+
 
     x++;
     if (x == cells_max)
@@ -397,239 +345,20 @@ void game_tetris::add_primitive()
     }
 }
 
-void game_tetris::set_cell_color(uint8_t x, uint8_t y, uint8_t z, uint8_t clr)
-{
-    columns[y * cells_max + x] |= static_cast<uint32_t>(clr)
-                                  << (column_bit_for_color * z);
-}
 
-uint8_t game_tetris::get_cell_color(uint8_t x, uint8_t y, uint8_t z)
-{
-    return get_column(x, y).get_z(z);
-}
+ 
 
-column& game_tetris::get_column(uint8_t x, uint8_t y)
-{
-    if (x < 0 || y < 0 || x >= cells_max || y >= cells_max)
-        return column_wall;
-    return columns[y * cells_max + x];
-}
-
-uint8_t game_tetris::get_column_z(uint8_t x, uint8_t y)
-{
-    if (x < 0 || y < 0 || x >= cells_max || y >= cells_max)
-        return -1;
-    return buffer_z[y * cells_max + x];
-}
-
-void game_tetris::set_column_z(uint8_t x, uint8_t y, uint8_t byte)
-{
-    buffer_z[y * cells_max + x] = byte;
-}
-
-void game_tetris::update_buffer_z()
-{
-    for (int x = 0; x < cells_max; x++)
-    {
-        for (int y = 0; y < cells_max; y++)
-        {
-            for (int z = get_column_z(x, y); z < cells_max_z; z++)
-            {
-                if (get_cell_color(x, y, z))
-                    set_column_z(x, y, z + 1);
-            }
-        }
-    }
-}
-
-positions game_tetris::get_bound_object(direction dir, const positions& object)
-{
-    uint8_t   bound;
-    positions out;
-    switch (dir)
-    {
-        case direction::left:
-            bound = std::min_element(object.begin(),
-                                     object.end(),
-                                     [&](const std::pair<uint8_t, uint8_t>& p1,
-                                         const std::pair<uint8_t, uint8_t>& p2)
-                                     { return p1.first < p2.first; })
-                        ->first;
-            for (auto point : object)
-            {
-                if (point.first == bound)
-                {
-                    out.push_back(point);
-                }
-            }
-            break;
-        case direction::right:
-            bound = std::max_element(object.begin(),
-                                     object.end(),
-                                     [&](const std::pair<uint8_t, uint8_t>& p1,
-                                         const std::pair<uint8_t, uint8_t>& p2)
-                                     { return p1.first < p2.first; })
-                        ->first;
-            for (auto point : object)
-            {
-                if (point.first == bound)
-                {
-                    out.push_back(point);
-                }
-            }
-            break;
-        case direction::forward:
-            bound = std::max_element(object.begin(),
-                                     object.end(),
-                                     [&](const std::pair<uint8_t, uint8_t>& p1,
-                                         const std::pair<uint8_t, uint8_t>& p2)
-                                     { return p1.second < p2.second; })
-                        ->second;
-            for (auto point : object)
-            {
-                if (point.second == bound)
-                {
-                    out.push_back(point);
-                }
-            }
-            break;
-        case direction::backward:
-            bound = std::min_element(object.begin(),
-                                     object.end(),
-                                     [&](const std::pair<uint8_t, uint8_t>& p1,
-                                         const std::pair<uint8_t, uint8_t>& p2)
-                                     { return p1.second < p2.second; })
-                        ->second;
-            for (auto point : object)
-            {
-                if (point.second == bound)
-                {
-                    out.push_back(point);
-                }
-            }
-            break;
-    }
-
-    return out;
-}
-
-void game_tetris::move_cell(direction dir)
+bool game_tetris::move_active_cell(direction dir)
 {
     dir = static_cast<direction>(
         (static_cast<int>(dir) +
          static_cast<int>(M_PI / 2 + camera_angle / (M_PI / 2))) %
         4);
 
-    positions object;
-    int8_t    shift_x = 0, shift_y = 0;
-
-    for (uint8_t x = 0; x < cells_max; x++)
-    {
-        for (uint8_t y = 0; y < cells_max; y++)
-        {
-            for (uint8_t z = get_column_z(x, y); z < cells_max_z; z++)
-            {
-                if (get_cell_color(x, y, z))
-                {
-                    object.push_back({ x, y });
-                }
-            }
-        }
-    }
-    if (object.empty())
-        return;
-
-    switch (dir)
-    {
-        case direction::left:
-            shift_x = -1;
-            std::sort(object.begin(),
-                      object.end(),
-                      [&](const std::pair<uint8_t, uint8_t>& p1,
-                          const std::pair<uint8_t, uint8_t>& p2)
-                      { return p1.first > p2.first; });
-            break;
-        case direction::right:
-            shift_x = 1;
-            std::sort(object.begin(),
-                      object.end(),
-                      [&](const std::pair<uint8_t, uint8_t>& p1,
-                          const std::pair<uint8_t, uint8_t>& p2)
-                      { return p1.first < p2.first; });
-            break;
-        case direction::forward:
-            shift_y = 1;
-            std::sort(object.begin(),
-                      object.end(),
-                      [&](const std::pair<uint8_t, uint8_t>& p1,
-                          const std::pair<uint8_t, uint8_t>& p2)
-                      { return p1.second < p2.second; });
-            break;
-        case direction::backward:
-            shift_y = -1;
-            std::sort(object.begin(),
-                      object.end(),
-                      [&](const std::pair<uint8_t, uint8_t>& p1,
-                          const std::pair<uint8_t, uint8_t>& p2)
-                      { return p1.second > p2.second; });
-            break;
-    }
-
-    positions bound_object = get_bound_object(dir, object);
-    for (auto [x, y] : bound_object)
-    {
-        column from_column = get_column(x, y);
-        column to_column   = get_column(x + shift_x, y + shift_y);
-
-        from_column &= ~((1 << column_bit_for_color * get_column_z(x, y)) - 1);
-        to_column &= ((1 << column_bit_for_color *
-                                get_column_z(x + shift_x, y + shift_y)) -
-                      1);
-
-        if (~(~from_column | ~to_column))
-            return;
-    }
-
-    for (auto [x, y] : object)
-    {
-        column& from_column = get_column(x, y);
-        column& to_column   = get_column(x + shift_x, y + shift_y);
-
-        uint32_t mask_to = (1 << column_bit_for_color *
-                                     get_column_z(x + shift_x, y + shift_y)) -
-                           1;
-        uint32_t mask_from =
-            (1 << column_bit_for_color * get_column_z(x, y)) - 1;
-
-        to_column |= from_column & ~std::max(mask_to, mask_from);
-        from_column &= mask_from;
-    }
+    return false;
 }
 
 void game_tetris::check_layer()
 {
-    bool is_full_layer;
-    for (int z = 0; z < cells_max_z; z++)
-    {
-        is_full_layer = true;
-        for (int x = 0; x < cells_max; x++)
-        {
-            for (int y = 0; y < cells_max; y++)
-            {
-                if (!get_cell_color(x, y, z))
-                    is_full_layer = false;
-            }
-        }
-        if (!is_full_layer)
-            continue;
-        score++;
-        for (int x = 0; x < cells_max; x++)
-        {
-            for (int y = 0; y < cells_max; y++)
-            {
-                get_column(x, y).move_down_over(z);
-                set_column_z(x, y, get_column_z(x, y) - 1);
-            }
-        }
-    }
+   
 }
