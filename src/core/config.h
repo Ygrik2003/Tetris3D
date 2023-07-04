@@ -15,9 +15,9 @@ struct config
     const char* model_board            = "res/models/board.obj";
     const char* model_cube             = "res/models/cube.obj";
 
-    double width          = 1920 - 100;
-    double height         = 1080 - 100;
-    bool   is_full_screen = true;
+    double width          = 1600 - 100;
+    double height         = 900 - 100;
+    bool   is_full_screen = false;
 
     float camera_speed_rotate = 1. / 100.;
     float camera_speed        = 0.05;

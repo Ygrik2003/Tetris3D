@@ -4,22 +4,111 @@
 #include "engine/engine_opengl.h"
 #include "objects/camera.h"
 
+#include <array>
+
 using namespace std::chrono;
-using positions = std::vector<std::pair<uint8_t, uint8_t>>;
 
 constexpr uint32_t fps = 60;
 
 enum class direction
-{ 
+{
     left,
     forward,
     right,
     backward,
+    up,
+    down,
+    last
 };
 
-constexpr size_t cells_max    = 8;
-constexpr size_t cells_max_z  = 14;
-constexpr size_t cells_z_lose = 10;
+class cell
+{
+public:
+    struct position
+    {
+        position()
+            : x(0)
+            , y(0)
+            , z(0)
+        {
+        }
+        position(int _x, int _y, int _z)
+            : x(_x)
+            , y(_y)
+            , z(_z)
+        {
+        }
+        position operator+(const position& r)
+        {
+            position ret;
+            ret.x = x + r.x;
+            ret.y = y + r.y;
+            ret.z = z + r.z;
+            return ret;
+        }
+        position operator-(const position& r)
+        {
+            position ret;
+            ret.x = x - r.x;
+            ret.y = y - r.y;
+            ret.z = z - r.z;
+            return ret;
+        }
+        bool operator==(const position& r)
+        {
+            return (x == r.x) && (y == r.y) && (z == r.z);
+        }
+
+        int x;
+        int y;
+        int z;
+    };
+
+    cell(position _pos, color::rgba _clr)
+        : pos(_pos)
+        , clr(_clr)
+    {
+    }
+
+    cell* get_cell_near(direction dir)
+    {
+        return neighboors[static_cast<int>(dir)];
+    }
+    void set_cell_near(direction dir, cell* c)
+    {
+        neighboors[static_cast<int>(dir)] = c;
+    }
+    color::rgba get_color() { return clr; }
+    bool        get_moving() { return is_moving; }
+    void        set_moving(bool state) { is_moving = state; }
+    position    get_position() { return pos; }
+    void        set_position(position _pos) { pos = _pos; }
+
+private:
+    position             pos;
+    color::rgba          clr;
+    std::array<cell*, 6> neighboors{ nullptr };
+    bool                 is_moving = true;
+};
+
+class primitive
+{
+public:
+    primitive(cell* _root)
+        : root(_root)
+    {
+    }
+    cell* get_root() { return root; }
+
+private:
+    cell*     root;
+    direction rotate{ 0 };
+    bool      is_active = true;
+};
+
+constexpr int cells_max    = 8;
+constexpr int cells_max_z  = 14;
+constexpr int cells_z_lose = 10;
 
 class game
 {
@@ -29,7 +118,7 @@ public:
     virtual bool event_listener(event&) = 0;
     virtual void update()               = 0;
     virtual void render()               = 0;
-    
+
 protected:
     engine* my_engine = nullptr;
     camera* cam       = nullptr;
@@ -55,29 +144,31 @@ private:
     void start_game();
     void add_primitive();
 
-    bool move_active_cell(direction dir);
+    bool move_active_cells(direction dir);
+    bool check_moving(cell* c, direction dir, std::vector<cell*>& visited);
+    void find_near(cell* c);
+    void collision();
     void check_layer();
-
 
     config cfg;
     size_t score = 0;
-    float  delay = 0.2; // Seconds
+    float  delay = 0.02; // Seconds
 
     uniform              uniforms;
+    figure*              figure_board;
+    figure*              figure_cube;
     std::vector<figure*> figures;
 
-    shader* shader_scene;
+    primitive*         active_primitive = nullptr;
+    std::vector<cell*> cells;
 
-    figure* figure_board;
-    figure* figure_cube;
-
+    shader*  shader_scene  = nullptr;
     texture* texture_board = nullptr;
     texture* texture_block = nullptr;
-    image    image_button_control;
+    // image    image_button_control;
 
     double camera_angle = -M_PI / 2;
     double view_height  = 1.;
-    double theta        = 0;
 
     struct flags
     {

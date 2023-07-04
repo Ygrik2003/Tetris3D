@@ -10,8 +10,6 @@ game_tetris::game_tetris()
 
     figure_board = model(cfg.model_board).get_figure();
     figure_cube  = model(cfg.model_cube).get_figure();
-
-
 }
 
 int game_tetris::initialize(config _cfg)
@@ -98,8 +96,8 @@ bool game_tetris::event_listener(event& e)
                     view_height += e.motion.y_rel / 50;
                     if (view_height < 1.)
                         view_height = 1.;
-                    if (view_height > 1.6)
-                        view_height = 1.6;
+                    if (view_height > 5)
+                        view_height = 5;
 #ifdef ANDROID
                 }
 #endif
@@ -107,19 +105,19 @@ bool game_tetris::event_listener(event& e)
 
             if (e.keyboard.w_clicked)
             {
-                move_active_cell(direction::forward);
+                move_active_cells(direction::forward);
             }
             if (e.keyboard.s_clicked)
             {
-                move_active_cell(direction::backward);
+                move_active_cells(direction::backward);
             }
             if (e.keyboard.a_clicked)
             {
-                move_active_cell(direction::left);
+                move_active_cells(direction::left);
             }
             if (e.keyboard.d_clicked)
             {
-                move_active_cell(direction::right);
+                move_active_cells(direction::right);
             }
 
             // Free Camera
@@ -165,6 +163,36 @@ void game_tetris::update()
     if ((timer.now() - last_time_update).count() < delay * 1e9)
         return;
     last_time_update = timer.now();
+
+    // check moving
+    for (cell* c : cells)
+    {
+        if (!c->get_moving())
+            continue;
+        if ((c->get_cell_near(direction::down) != nullptr &&
+             !c->get_cell_near(direction::down)->get_moving()) ||
+            c->get_position().z == 0)
+            return;
+    }
+    // moving
+    bool is_collision = false;
+    for (cell* c : cells)
+    {
+        if (!c->get_moving())
+            continue;
+        cell::position cur_pos = c->get_position();
+        if (c->get_moving())
+            cur_pos.z--;
+        c->set_position(cur_pos);
+        find_near(c);
+        is_collision = (c->get_cell_near(direction::down) &&
+                        !c->get_cell_near(direction::down)->get_moving()) ||
+                       (cur_pos.z == 0 && c->get_moving());
+    }
+    if (is_collision)
+    {
+        collision();
+    }
 }
 
 void game_tetris::render()
@@ -252,22 +280,22 @@ void game_tetris::draw_ui()
     // if (ImGui::ImageButton())
     if (ImGui::Button("Forvard", button_control_size))
     {
-        move_active_cell(direction::forward);
+        move_active_cells(direction::forward);
     }
     ImGui::SetCursorPos(ImVec2(7, button_control_size.y + 15));
     if (ImGui::Button("Left", button_control_size))
     {
-        move_active_cell(direction::left);
+        move_active_cells(direction::left);
     }
     ImGui::SameLine();
     if (ImGui::Button("Backward", button_control_size))
     {
-        move_active_cell(direction::backward);
+        move_active_cells(direction::backward);
     }
     ImGui::SameLine();
     if (ImGui::Button("Right", button_control_size))
     {
-        move_active_cell(direction::right);
+        move_active_cells(direction::right);
     }
 
     ImGui::End();
@@ -315,25 +343,56 @@ void game_tetris::render_scene()
     index_buffer* index_buff = new index_buffer(
         figure_cube->get_indexes().data(), figure_cube->get_indexes().size());
 
-    //render
+    // render
 
-   
+    for (cell* c : cells)
+    {
+        figure_cube->set_translate(
+            vector3d(-1. / 2. + (c->get_position().x + 0.5) / cells_max,
+                     (c->get_position().z + 0.5) / cells_max,
+                     -1. / 2. + (c->get_position().y + 0.5) / cells_max));
+        figure_cube->set_texture(texture_block);
+        figure_cube->uniform_link(uniforms);
+
+        my_engine->reload_uniform();
+        my_engine->render_triangles(vertex_buff,
+                                    index_buff,
+                                    figure_cube->get_texture(),
+                                    0,
+                                    index_buff->size());
+    }
+
     delete vertex_buff;
     delete index_buff;
 }
 void game_tetris::start_game()
 {
-    state.is_started = ~state.is_started;
+    state.is_started = true;
     add_primitive();
 }
 
 void game_tetris::add_primitive()
 {
+    static std::vector<color::rgba> colors;
+    colors.push_back(color::rgba(255, 0, 0, 1));
+    colors.push_back(color::rgba(0, 255, 0, 1));
+    colors.push_back(color::rgba(0, 0, 255, 1));
     static float x = 0;
     static float y = 0;
 
-    
-
+    cell* root_cell = new cell(cell::position{ static_cast<int>(x), static_cast<int>(y), cells_max_z },
+        colors[rand() % colors.size()]);
+    // cell* cell_1    = new cell(cell::position{
+    //     static_cast<int>(x), static_cast<int>(y), cells_max_z - 1 });
+    // cell* cell_2    = new cell(cell::position{
+    //     static_cast<int>(x + 1), static_cast<int>(y), cells_max_z });
+    cells.push_back(root_cell);
+    // cells.push_back(cell_1);
+    // cells.push_back(cell_2);
+    find_near(root_cell);
+    // find_near(cell_1);
+    // find_near(cell_2);
+    active_primitive = new primitive(root_cell);
 
     x++;
     if (x == cells_max)
@@ -345,20 +404,139 @@ void game_tetris::add_primitive()
     }
 }
 
-
- 
-
-bool game_tetris::move_active_cell(direction dir)
+bool game_tetris::move_active_cells(direction dir)
 {
     dir = static_cast<direction>(
         (static_cast<int>(dir) +
-         static_cast<int>(M_PI / 2 + camera_angle / (M_PI / 2))) %
+         static_cast<int>(M_PI / 2 + (2 * M_PI + camera_angle) / (M_PI / 2))) %
         4);
 
+    std::vector<cell*> visited;
+    if (check_moving(active_primitive->get_root(), dir, visited))
+    {
+        for (cell* c : cells)
+        {
+            if (!c->get_moving())
+                continue;
+            cell::position cur_pos = c->get_position();
+            switch (dir)
+            {
+                case direction::left:
+                    cur_pos.x--;
+                    break;
+                case direction::forward:
+                    cur_pos.y++;
+                    break;
+                case direction::right:
+                    cur_pos.x++;
+                    break;
+                case direction::backward:
+                    cur_pos.y--;
+                    break;
+            }
+            c->set_position(cur_pos);
+            find_near(c);
+        }
+        return true;
+    }
     return false;
+}
+
+bool game_tetris::check_moving(cell*               c,
+                               direction           dir,
+                               std::vector<cell*>& visited)
+{
+    for (auto find_cell : visited)
+        if (c == find_cell)
+            return true;
+    visited.push_back(c);
+
+    bool is_can_moving = true;
+    if (c->get_cell_near(direction::left))
+    {
+        is_can_moving =
+            check_moving(c->get_cell_near(direction::left), dir, visited);
+    }
+    if (c->get_cell_near(direction::right))
+    {
+        is_can_moving =
+            check_moving(c->get_cell_near(direction::right), dir, visited);
+    }
+    if (c->get_cell_near(direction::forward))
+    {
+        is_can_moving =
+            check_moving(c->get_cell_near(direction::forward), dir, visited);
+    }
+    if (c->get_cell_near(direction::backward))
+    {
+        is_can_moving =
+            check_moving(c->get_cell_near(direction::backward), dir, visited);
+    }
+
+    if (c->get_position().x == 0 && dir == direction::left)
+    {
+        return false;
+    }
+    else if (c->get_position().x == (cells_max - 1) && dir == direction::right)
+    {
+        return false;
+    }
+    else if (c->get_position().y == (cells_max - 1) &&
+             dir == direction::forward)
+    {
+        return false;
+    }
+    else if (c->get_position().y == 0 && dir == direction::backward)
+    {
+        return false;
+    }
+
+    if (c->get_cell_near(dir) && !c->get_cell_near(dir)->get_moving())
+        return false;
+
+    return is_can_moving;
+}
+
+void game_tetris::find_near(cell* c)
+{
+    for (int dir = 0; dir != static_cast<int>(direction::last); dir++)
+        c->set_cell_near(static_cast<direction>(dir), nullptr);
+    cell::position cur_pos = c->get_position();
+    for (cell* near : cells)
+    {
+        if (near == c)
+            continue;
+        cell::position near_pos = near->get_position();
+
+        if (cur_pos - cell::position(1, 0, 0) == near_pos)
+            c->set_cell_near(direction::left, near);
+        if (cur_pos + cell::position(1, 0, 0) == near_pos)
+            c->set_cell_near(direction::right, near);
+        if (cur_pos - cell::position(0, 1, 0) == near_pos)
+            c->set_cell_near(direction::backward, near);
+        if (cur_pos + cell::position(0, 1, 0) == near_pos)
+            c->set_cell_near(direction::forward, near);
+        if (cur_pos - cell::position(0, 0, 1) == near_pos)
+            c->set_cell_near(direction::down, near);
+        if (cur_pos + cell::position(0, 0, 1) == near_pos)
+            c->set_cell_near(direction::up, near);
+    }
+}
+
+void game_tetris::collision()
+{
+
+    for (cell* c : cells)
+    {
+        c->set_moving(false);
+    }
+    check_layer();
+    add_primitive();
 }
 
 void game_tetris::check_layer()
 {
-    1;
+    for (cell* c : cells)
+    {
+    }
 }
