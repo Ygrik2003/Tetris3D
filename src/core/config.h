@@ -7,7 +7,10 @@ struct config
     const char* shader_fragment        = "res/shaders/shader.frag";
     const char* shader_vertex_imgui    = "res/shaders/shader_imgui.vert";
     const char* shader_fragment_imgui  = "res/shaders/shader_imgui.frag";
-    const char* texture_block          = "res/textures/texture_block.png";
+    const char* texture_block_1        = "res/textures/texture_block_1.png";
+    const char* texture_block_2        = "res/textures/texture_block_2.png";
+    const char* texture_block_3        = "res/textures/texture_block_3.png";
+    const char* texture_block_4        = "res/textures/texture_block_4.png";
     const char* texture_board          = "res/textures/texture_board.png";
     const char* texture_button_control = "res/textures/texture_board.png";
     const char* sound_background_music = "res/sounds/background_music.wav";

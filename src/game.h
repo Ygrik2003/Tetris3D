@@ -64,9 +64,9 @@ public:
         int z;
     };
 
-    cell(position _pos, color::rgba _clr)
+    cell(position _pos, uint8_t _texture_index)
         : pos(_pos)
-        , clr(_clr)
+        , texture_index(_texture_index)
     {
     }
 
@@ -78,7 +78,7 @@ public:
     {
         neighboors[static_cast<int>(dir)] = c;
     }
-    color::rgba get_color() { return clr; }
+    uint8_t get_texture_index() { return texture_index; }
     bool        get_moving() { return is_moving; }
     void        set_moving(bool state) { is_moving = state; }
     position    get_position() { return pos; }
@@ -86,7 +86,7 @@ public:
 
 private:
     position             pos;
-    color::rgba          clr;
+    uint8_t              texture_index;
     std::array<cell*, 6> neighboors{ nullptr };
     bool                 is_moving = true;
 };
@@ -152,7 +152,7 @@ private:
 
     config cfg;
     size_t score = 0;
-    float  delay = 0.02; // Seconds
+    float  delay = 0.2; // Seconds
 
     uniform              uniforms;
     figure*              figure_board;
@@ -162,13 +162,14 @@ private:
     primitive*         active_primitive = nullptr;
     std::vector<cell*> cells;
 
-    shader*  shader_scene  = nullptr;
-    texture* texture_board = nullptr;
-    texture* texture_block = nullptr;
-    // image    image_button_control;
+    shader*               shader_scene  = nullptr;
+    texture*              texture_board = nullptr;
+    std::vector<texture*> textures_block;
 
     double camera_angle = -M_PI / 2;
     double view_height  = 1.;
+    double min_view_height  = 1.;
+    double max_view_height  = 1.6;
 
     struct flags
     {
