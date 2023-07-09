@@ -38,6 +38,14 @@ struct event
         uint8_t d_released : 1;
         uint8_t space_clicked : 1;
         uint8_t space_released : 1;
+        uint8_t left_clicked : 1;
+        uint8_t left_released : 1;
+        uint8_t right_clicked : 1;
+        uint8_t right_released : 1;
+        uint8_t up_clicked : 1;
+        uint8_t up_released : 1;
+        uint8_t down_clicked : 1;
+        uint8_t down_released : 1;
     } keyboard;
 
     struct event_action

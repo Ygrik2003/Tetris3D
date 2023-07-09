@@ -307,7 +307,7 @@ int engine_opengl::initialize(config& cfg)
     }
     else
     {
-#ifdef ANDROID
+#ifdef __ANDROID__
         const SDL_DisplayMode* dispale_mode = SDL_GetCurrentDisplayMode(1);
         if (!dispale_mode)
         {
@@ -480,6 +480,10 @@ bool engine_opengl::event_keyboard(event& e)
             if (sdl_event.key.keysym.sym == SDLK_a) e.keyboard.a_clicked         = 1;
             if (sdl_event.key.keysym.sym == SDLK_d) e.keyboard.d_clicked         = 1;
             if (sdl_event.key.keysym.sym == SDLK_SPACE) e.keyboard.space_clicked = 1;
+            if (sdl_event.key.keysym.sym == SDLK_LEFT) e.keyboard.left_clicked   = 1;
+            if (sdl_event.key.keysym.sym == SDLK_RIGHT) e.keyboard.right_clicked = 1;
+            if (sdl_event.key.keysym.sym == SDLK_UP) e.keyboard.up_clicked       = 1;
+            if (sdl_event.key.keysym.sym == SDLK_DOWN) e.keyboard.down_clicked   = 1;
                 // clang-format on
                 is_event = true;
                 break;
@@ -492,6 +496,10 @@ bool engine_opengl::event_keyboard(event& e)
             if (sdl_event.key.keysym.sym == SDLK_a) e.keyboard.a_released         = 1;
             if (sdl_event.key.keysym.sym == SDLK_d) e.keyboard.d_released         = 1;
             if (sdl_event.key.keysym.sym == SDLK_SPACE) e.keyboard.space_released = 1;
+            if (sdl_event.key.keysym.sym == SDLK_LEFT) e.keyboard.left_released   = 1;
+            if (sdl_event.key.keysym.sym == SDLK_RIGHT) e.keyboard.right_released = 1;
+            if (sdl_event.key.keysym.sym == SDLK_UP) e.keyboard.up_released       = 1;
+            if (sdl_event.key.keysym.sym == SDLK_DOWN) e.keyboard.down_released   = 1;
                 // clang-format on
                 is_event = true;
                 break;
@@ -840,7 +848,7 @@ bool ImGui_ImplSdlGL3_ProcessEvent(const SDL_Event* event, config& cfg)
     static ImGuiIO& io = ImGui::GetIO();
     switch (event->type)
     {
-#ifndef ANDROID
+#ifndef __ANDROID__
         case SDL_EVENT_MOUSE_WHEEL:
         {
             if (event->wheel.y > 0)

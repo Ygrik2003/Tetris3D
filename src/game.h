@@ -21,6 +21,13 @@ enum class direction
     last
 };
 
+enum class axis
+{
+    x, 
+    y, 
+    z
+};
+
 class cell
 {
 public:
@@ -138,13 +145,16 @@ public:
 
 private:
     void draw_menu();
+    void draw_restart_menu();
     void draw_ui();
     void render_scene();
 
     void start_game();
+    void lose_game();
     void add_primitive();
 
     bool move_active_cells(direction dir);
+    bool rotate_around(axis ax);
     bool check_moving(cell* c, direction dir, std::vector<cell*>& visited);
     void find_near(cell* c);
     void collision();
@@ -152,7 +162,7 @@ private:
 
     config cfg;
     size_t score = 0;
-    float  delay = 0.2; // Seconds
+    float  delay = 1; // Seconds
 
     uniform              uniforms;
     figure*              figure_board;
@@ -174,6 +184,7 @@ private:
     struct flags
     {
         uint8_t is_started : 1;
+        uint8_t is_restart : 1;
         uint8_t is_quit : 1;
         uint8_t is_rotated : 1;
         uint8_t is_moving : 1;

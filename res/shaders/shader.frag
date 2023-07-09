@@ -35,7 +35,7 @@ void main()
 
     vec3 dist = v_position - light_pos;
 
-    vec3 result = (ambient + diffuse) * color.xyz;
+    vec3 result = (ambient + diffuse) / max(1., pow(length(dist), 0.25)) * color.xyz;
 
     o_color = vec4(result, color.w);
 }

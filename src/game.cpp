@@ -14,7 +14,6 @@ game_tetris::game_tetris()
 
 int game_tetris::initialize(config _cfg)
 {
-
     cfg = _cfg;
 
     cam = new camera(cfg.camera_speed);
@@ -83,7 +82,7 @@ bool game_tetris::event_listener(event& e)
             }
             if (e.motion.x_rel && state.is_rotated)
             {
-#ifdef ANDROID
+#ifdef __ANDROID__
                 if (e.motion.x > window_control_width &&
                     e.motion.x < window_rotate_x)
 #endif
@@ -91,17 +90,17 @@ bool game_tetris::event_listener(event& e)
             }
             if (e.motion.y_rel && state.is_rotated)
             {
-#ifdef ANDROID
+#ifdef __ANDROID__
                 if (e.motion.x > window_control_width &&
                     e.motion.x < window_rotate_x)
                 {
 #endif
                     view_height += e.motion.y_rel / 50;
-                    if (view_height < 1.)
-                        view_height = 1.;
-                    if (view_height > 5)
-                        view_height = 5;
-#ifdef ANDROID
+                    if (view_height < min_view_height)
+                        view_height = min_view_height;
+                    if (view_height > max_view_height)
+                        view_height = max_view_height;
+#ifdef __ANDROID__
                 }
 #endif
             }
@@ -122,7 +121,18 @@ bool game_tetris::event_listener(event& e)
             {
                 move_active_cells(direction::right);
             }
-
+            if (e.keyboard.left_clicked)
+            {
+                rotate_around(axis::x);
+            }
+            if (e.keyboard.down_clicked)
+            {
+                rotate_around(axis::y);
+            }
+            if (e.keyboard.right_clicked)
+            {
+                rotate_around(axis::z);
+            }
             // Free Camera
             // if (e.motion.x || e.motion.y)
             // {
@@ -163,7 +173,8 @@ void game_tetris::update()
                        -view_height,
                        -sqrt(view_height) * std::sin(camera_angle));
 
-    if ((timer.now() - last_time_update).count() < delay * 1e9)
+    if ((timer.now() - last_time_update).count() < delay * 1e9 ||
+        !state.is_started)
         return;
     last_time_update = timer.now();
 
@@ -206,17 +217,19 @@ void game_tetris::update()
 void game_tetris::render()
 {
     ImGui::NewFrame();
-    if (!state.is_started)
+    if (!state.is_started && !state.is_restart)
     {
         draw_menu();
+    }
+    else if (!state.is_started && state.is_restart)
+    {
+        draw_restart_menu();
     }
     else
     {
         shader_scene->use();
         render_scene();
-#ifdef ANDROID
         draw_ui();
-#endif
     }
     ImGui::Render();
     my_engine->swap_buffers();
@@ -245,22 +258,50 @@ void game_tetris::draw_menu()
     {
         start_game();
     }
-    if (ImGui::Button("Settings", ImVec2(0.15 * cfg.width, 0.05 * cfg.height)))
-    {
-    }
+    // if (ImGui::Button("Settings", ImVec2(0.15 * cfg.width, 0.05 *
+    // cfg.height)))
+    // {
+    // }
     if (ImGui::Button("Quit", ImVec2(0.09 * cfg.width, 0.05 * cfg.height)))
     {
     }
 
     ImGui::End();
 }
+void game_tetris::draw_restart_menu()
+{
+    static const int window_width  = 0.2 * cfg.width;
+    static const int window_height = 0.2 * cfg.height;
+    static const int window_x      = (cfg.width - window_width) / 2;
+    static const int window_y      = (cfg.height - window_height) / 2;
+
+    ImGui::SetNextWindowSize(ImVec2(window_width, window_height));
+    ImGui::SetNextWindowPos(ImVec2(window_x, window_y));
+
+    ImGui::Begin("Restart",
+                 0,
+                 ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+
+    ImGui::LabelText("", "Score: %d", score);
+
+    if (ImGui::Button("Restart", ImVec2(0.1 * cfg.width, 0.05 * cfg.height)))
+    {
+        start_game();
+    }
+    // if (ImGui::Button("Settings", ImVec2(0.15 * cfg.width, 0.05 *
+    // cfg.height)))
+    // {
+    // }
+    if (ImGui::Button("Quit", ImVec2(0.09 * cfg.width, 0.05 * cfg.height)))
+    {
+    }
+
+    ImGui::End();
+}
+
 void game_tetris::draw_ui()
 {
-    static const ImVec2 button_rotate_size =
-        ImVec2(window_rotate_width - 20, window_rotate_height / 3 - 10);
-    static const ImVec2 button_control_size =
-        ImVec2(window_control_width / 3 - 10, window_control_height / 2 - 10);
-
     ImGui::SetNextWindowSize(ImVec2(window_score_width, window_score_height));
     ImGui::SetNextWindowPos(ImVec2(window_score_x, window_score_y));
 
@@ -272,6 +313,12 @@ void game_tetris::draw_ui()
     ImGui::Text("Score: %zu", score);
 
     ImGui::End();
+
+#ifdef __ANDROID__
+    static const ImVec2 button_rotate_size =
+        ImVec2(window_rotate_width - 20, window_rotate_height / 3 - 10);
+    static const ImVec2 button_control_size =
+        ImVec2(window_control_width / 3 - 10, window_control_height / 2 - 10);
 
     ImGui::SetNextWindowSize(
         ImVec2(window_control_width, window_control_height));
@@ -285,7 +332,6 @@ void game_tetris::draw_ui()
 
     ImGui::SetCursorPos(ImVec2(button_control_size.x + 15, 5));
 
-    // if (ImGui::ImageButton())
     if (ImGui::Button("Forvard", button_control_size))
     {
         move_active_cells(direction::forward);
@@ -319,14 +365,18 @@ void game_tetris::draw_ui()
 
     if (ImGui::Button("Rotate X axis", button_rotate_size))
     {
+        rotate_around(axis::x);
     }
     if (ImGui::Button("Rotate Y axis", button_rotate_size))
     {
+        rotate_around(axis::y);
     }
     if (ImGui::Button("Rotate Z axis", button_rotate_size))
     {
+        rotate_around(axis::z);
     }
     ImGui::End();
+#endif
 }
 void game_tetris::render_scene()
 {
@@ -369,14 +419,27 @@ void game_tetris::render_scene()
                                     0,
                                     index_buff->size());
     }
-
     delete vertex_buff;
     delete index_buff;
 }
 void game_tetris::start_game()
 {
+    score            = 0;
     state.is_started = true;
+    state.is_restart = false;
+
     add_primitive();
+}
+
+void game_tetris::lose_game()
+{
+    state.is_started = false;
+    state.is_restart = true;
+    for (cell* c : cells)
+    {
+        delete c;
+    }
+    cells.resize(0);
 }
 
 void game_tetris::add_primitive()
@@ -403,7 +466,7 @@ void game_tetris::add_primitive()
     find_near(cell_2);
     active_primitive = new primitive(root_cell);
 
-    x++;
+    x += 2;
     if (x == cells_max)
     {
         x = 0;
@@ -451,61 +514,114 @@ bool game_tetris::move_active_cells(direction dir)
     return false;
 }
 
+bool game_tetris::rotate_around(axis ax)
+{
+    auto get_rotate_pos = [&](cell::position cur_pos)
+    {
+        cell::position new_pos;
+        switch (ax)
+        {
+            case axis::x:
+                new_pos.x = cur_pos.x;
+                new_pos.y =
+                    cos(M_PI / 2) * cur_pos.y - sin(M_PI / 2) * cur_pos.z;
+                new_pos.z =
+                    sin(M_PI / 2) * cur_pos.y + cos(M_PI / 2) * cur_pos.z;
+                break;
+            case axis::y:
+                new_pos.x =
+                    cos(M_PI / 2) * cur_pos.x + sin(M_PI / 2) * cur_pos.z;
+                new_pos.y = cur_pos.y;
+                new_pos.z =
+                    -sin(M_PI / 2) * cur_pos.x + cos(M_PI / 2) * cur_pos.z;
+                break;
+            case axis::z:
+                new_pos.x =
+                    cos(M_PI / 2) * cur_pos.x - sin(M_PI / 2) * cur_pos.y;
+                new_pos.y =
+                    sin(M_PI / 2) * cur_pos.x + cos(M_PI / 2) * cur_pos.y;
+                new_pos.z = cur_pos.z;
+                break;
+        }
+        return new_pos;
+    };
+
+    cell::position center_position =
+        active_primitive->get_root()->get_position();
+    std::vector<cell*> rotate_cells;
+    std::vector<cell*> static_cells;
+    for (cell* c : cells)
+    {
+        if (c == active_primitive->get_root())
+            continue;
+        if (c->get_moving())
+        {
+            rotate_cells.push_back(c);
+        }
+        else
+        {
+            static_cells.push_back(c);
+        }
+    }
+    for (cell* c : rotate_cells)
+    {
+        cell::position new_pos;
+        cell::position cur_pos = c->get_position() - center_position;
+
+        new_pos = get_rotate_pos(cur_pos) + center_position;
+
+        if (new_pos.x < 0 || new_pos.y < 0 || new_pos.z < 0 ||
+                 (new_pos.x > cells_max - 1) || (new_pos.y > cells_max - 1))
+        {
+            return false;
+        }
+
+        for (cell* c : static_cells)
+        {
+            if (c->get_position() == new_pos)
+            {
+                return false;
+            }
+        }
+    }
+
+    for (cell* c : rotate_cells)
+    {
+        cell::position new_pos;
+        cell::position cur_pos = c->get_position() - center_position;
+
+        new_pos = get_rotate_pos(cur_pos) + center_position;
+
+        c->set_position(new_pos);
+    }
+
+    return true;
+}
+
 bool game_tetris::check_moving(cell*               c,
                                direction           dir,
                                std::vector<cell*>& visited)
 {
-    for (auto find_cell : visited)
-        if (c == find_cell)
-            return true;
-    visited.push_back(c);
-
-    bool is_left     = true;
-    bool is_right    = true;
-    bool is_forward  = true;
-    bool is_backward = true;
-    if (c->get_cell_near(direction::left))
+    for (cell* c : cells)
     {
-        is_left = check_moving(c->get_cell_near(direction::left), dir, visited);
+        if (c->get_moving() && c->get_cell_near(dir) &&
+            !c->get_cell_near(dir)->get_moving())
+            return false;
+        if (c->get_moving())
+        {
+            if (dir == direction::left && c->get_position().x == 0)
+                return false;
+            else if (dir == direction::right &&
+                     c->get_position().x == cells_max - 1)
+                return false;
+            else if (dir == direction::forward &&
+                     c->get_position().y == cells_max - 1)
+                return false;
+            else if (dir == direction::backward && c->get_position().y == 0)
+                return false;
+        }
     }
-    if (c->get_cell_near(direction::right))
-    {
-        is_right =
-            check_moving(c->get_cell_near(direction::right), dir, visited);
-    }
-    if (c->get_cell_near(direction::forward))
-    {
-        is_forward =
-            check_moving(c->get_cell_near(direction::forward), dir, visited);
-    }
-    if (c->get_cell_near(direction::backward))
-    {
-        is_backward =
-            check_moving(c->get_cell_near(direction::backward), dir, visited);
-    }
-
-    if (c->get_position().x == 0 && dir == direction::left)
-    {
-        return false;
-    }
-    else if (c->get_position().x == (cells_max - 1) && dir == direction::right)
-    {
-        return false;
-    }
-    else if (c->get_position().y == (cells_max - 1) &&
-             dir == direction::forward)
-    {
-        return false;
-    }
-    else if (c->get_position().y == 0 && dir == direction::backward)
-    {
-        return false;
-    }
-
-    if (c->get_cell_near(dir) && !c->get_cell_near(dir)->get_moving())
-        return false;
-
-    return is_left && is_right && is_forward && is_backward;
+    return true;
 }
 
 void game_tetris::find_near(cell* c)
@@ -547,7 +663,34 @@ void game_tetris::collision()
 
 void game_tetris::check_layer()
 {
+    std::array<uint8_t, cells_max_z> count{ 0 };
+    std::vector<uint8_t>             z_to_delete;
     for (cell* c : cells)
     {
+        count[c->get_position().z]++;
+    }
+    for (uint8_t i = 0; i < cells_max_z; i++)
+    {
+        if (i > cells_z_lose && count[i] != 0)
+            lose_game();
+        if (count[i] == cells_max * cells_max)
+            z_to_delete.push_back(i);
+    }
+    for (uint8_t z : z_to_delete)
+    {
+        score++;
+        for (int j = cells.size() - 1; j >= 0; j--)
+        {
+            if (cells[j]->get_position().z == z)
+            {
+                delete cells[j];
+                cells.erase(cells.begin() + j, cells.begin() + j + 1);
+            }
+            else if (cells[j]->get_position().z > z)
+            {
+                cells[j]->set_position(cells[j]->get_position() -
+                                       cell::position(0, 0, 1));
+            }
+        }
     }
 }
