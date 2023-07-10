@@ -565,7 +565,6 @@ void engine_opengl::generate_shadow_map()
 
     //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindTexture(GL_TEXTURE_2D, depthMap);
-    RenderScene();
 }
 
 void engine_opengl::render_triangle(const triangle<vertex3d>& tr)
