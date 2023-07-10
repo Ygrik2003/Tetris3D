@@ -1,5 +1,5 @@
 #version 300 es
-precision mediump float;
+precision highp float;
 
 layout(location = 0) in vec2 i_position;
 layout(location = 2) in vec2 i_tex_coord;
