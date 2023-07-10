@@ -530,10 +530,50 @@ bool engine_opengl::event_keyboard(event& e)
     return is_event;
 }
 
+void engine_opengl::generate_shadow_map()
+{
+    glGenFramebuffers(1, &depthMapFBO);
+
+    glGenTextures(1, &depthMap);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_DEPTH_COMPONENT,
+                 _config.width,
+                 _config.height,
+                 0,
+                 GL_DEPTH_COMPONENT,
+                 GL_FLOAT,
+                 NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glFramebufferTexture2D(
+        GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0);
+    // glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // 1. сначала рисуем карту глубины
+    glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+    glClear(GL_DEPTH_BUFFER_BIT);
+
+    // 2. рисуем сцену как обычно с тенями (используя карту глубины)
+
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, depthMap);
+    RenderScene();
+}
+
 void engine_opengl::render_triangle(const triangle<vertex3d>& tr)
 {
     reload_uniform();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CHECK_ERRORS()
     glBufferData(GL_ARRAY_BUFFER, sizeof(tr), &tr, GL_STATIC_DRAW);
     GL_CHECK_ERRORS()
 
@@ -548,6 +588,8 @@ void engine_opengl::render_triangle(const triangle<vertex3d_colored>& tr)
 {
     reload_uniform();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CHECK_ERRORS()
     glBufferData(GL_ARRAY_BUFFER, sizeof(tr), &tr, GL_STATIC_DRAW);
     GL_CHECK_ERRORS()
 
@@ -563,6 +605,8 @@ void engine_opengl::render_triangle(const triangle<vertex3d_textured>& tr)
 {
     reload_uniform();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CHECK_ERRORS()
     glBufferData(GL_ARRAY_BUFFER, sizeof(tr), &tr, GL_STATIC_DRAW);
     GL_CHECK_ERRORS()
 
@@ -579,6 +623,8 @@ void engine_opengl::render_triangle(
 {
     reload_uniform();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CHECK_ERRORS()
     glBufferData(GL_ARRAY_BUFFER, sizeof(tr), &tr, GL_STATIC_DRAW);
     GL_CHECK_ERRORS()
 
@@ -604,6 +650,8 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d>* vertexes,
     bind_vertexes<vertex3d>();
     bind_normal<vertex3d>();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CHECK_ERRORS()
     glDrawElements(
         GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()
@@ -622,6 +670,8 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d_colored>* vertexes,
     bind_normal<vertex3d_colored>();
     bind_colors<vertex3d_colored>();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CHECK_ERRORS()
     glDrawElements(
         GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()
@@ -642,6 +692,8 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d_textured>* vertexes,
     bind_normal<vertex3d_textured>();
     bind_texture_coords<vertex3d_textured>();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CHECK_ERRORS()
     glDrawElements(
         GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()
@@ -663,6 +715,8 @@ void engine_opengl::render_triangles(
     bind_texture_coords<vertex3d_colored_textured>();
     bind_colors<vertex3d_colored_textured>();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CHECK_ERRORS()
     glDrawElements(
         GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()
@@ -683,6 +737,8 @@ void engine_opengl::render_triangles(
     bind_texture_coords<vertex2d_colored_textured>();
     bind_colors<vertex2d_colored_textured>();
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    GL_CHECK_ERRORS()
     glDrawElements(
         GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()

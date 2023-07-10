@@ -20,6 +20,7 @@ public:
     virtual void uninitialize()              = 0;
 
     virtual bool event_keyboard(event&) = 0;
+    virtual void generate_shadow_map()  = 0;
 
     virtual void render_triangle(const triangle<vertex3d>& tr)          = 0;
     virtual void render_triangle(const triangle<vertex3d_colored>& tr)  = 0;
@@ -65,5 +66,7 @@ public:
     virtual void play_sound(const char* path, bool is_looped) = 0;
 
 protected:
+    unsigned int depthMapFBO;
+    unsigned int depthMap;
     config _config;
 };

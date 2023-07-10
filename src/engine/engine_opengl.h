@@ -28,6 +28,7 @@ public:
     void uninitialize() override;
 
     bool event_keyboard(event&) override;
+    void generate_shadow_map() override;
 
     void render_triangle(const triangle<vertex3d>& tr) override;
     void render_triangle(const triangle<vertex3d_colored>& tr) override;

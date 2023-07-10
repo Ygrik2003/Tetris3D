@@ -401,7 +401,6 @@ void game_tetris::render_scene()
     index_buffer* index_buff = new index_buffer(
         figure_cube->get_indexes().data(), figure_cube->get_indexes().size());
 
-    // render
 
     for (cell* c : cells)
     {
