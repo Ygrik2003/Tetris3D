@@ -143,6 +143,8 @@ public:
 
     void add_figure(figure* fig, texture* texture);
 
+    bool get_quit_state() const;
+
 private:
     void draw_menu();
     void draw_restart_menu();
@@ -162,7 +164,7 @@ private:
 
     config cfg;
     size_t score = 0;
-    float  delay = 1; // Seconds
+    float  delay = 0.6; // Seconds
 
     uniform              uniforms;
     figure*              figure_board;
@@ -176,10 +178,10 @@ private:
     texture*              texture_board = nullptr;
     std::vector<texture*> textures_block;
 
-    double camera_angle = -M_PI / 2;
-    double view_height  = 1.;
-    double min_view_height  = 1.;
-    double max_view_height  = 1.6;
+    float camera_angle = -M_PI / 2;
+    float view_height  = 1.;
+    float min_view_height  = 1.;
+    float max_view_height  = 1.6;
 
     struct flags
     {
@@ -191,16 +193,16 @@ private:
 
     } state;
 
-    int window_score_width;
-    int window_score_height;
-    int window_score_x;
-    int window_score_y;
-    int window_control_width;
-    int window_control_height;
-    int window_control_x;
-    int window_control_y;
-    int window_rotate_width;
-    int window_rotate_height;
-    int window_rotate_x;
-    int window_rotate_y;
+    float window_score_width;
+    float window_score_height;
+    float window_score_x;
+    float window_score_y;
+    float window_control_width;
+    float window_control_height;
+    float window_control_x;
+    float window_control_y;
+    float window_rotate_width;
+    float window_rotate_height;
+    float window_rotate_x;
+    float window_rotate_y;
 };

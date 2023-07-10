@@ -125,7 +125,7 @@ template <class vertex_type>
 void bind_vertexes()
 {
     glEnableVertexAttribArray(0);
-    GL_CHECK_ERRORS()
+    GL_CHECK_ERRORS();
     glVertexAttribPointer(
         0,
         3,
@@ -140,7 +140,7 @@ template <class vertex_type>
 void bind_normal()
 {
     glEnableVertexAttribArray(1);
-    GL_CHECK_ERRORS()
+    GL_CHECK_ERRORS();
     glVertexAttribPointer(
         1,
         3,
@@ -148,14 +148,14 @@ void bind_normal()
         GL_FALSE,
         sizeof(vertex_type),
         reinterpret_cast<GLvoid*>(vertex_type::OFFSET_NORMAL));
-    GL_CHECK_ERRORS()
+    GL_CHECK_ERRORS();
 }
 
 template <class vertex_type>
 void bind_texture_coords()
 {
     glEnableVertexAttribArray(2);
-    GL_CHECK_ERRORS()
+    GL_CHECK_ERRORS();
     glVertexAttribPointer(
         2,
         2,
@@ -163,21 +163,21 @@ void bind_texture_coords()
         GL_FALSE,
         sizeof(vertex_type),
         reinterpret_cast<GLvoid*>(vertex_type::OFFSET_TEXTURE));
-    GL_CHECK_ERRORS()
+    GL_CHECK_ERRORS();
 }
 
 template <class vertex_type>
 void bind_colors()
 {
     glEnableVertexAttribArray(3);
-    GL_CHECK_ERRORS()
+    GL_CHECK_ERRORS();
     glVertexAttribPointer(3,
                           4,
                           GL_UNSIGNED_BYTE,
                           GL_TRUE,
                           sizeof(vertex_type),
                           reinterpret_cast<GLvoid*>(vertex_type::OFFSET_COLOR));
-    GL_CHECK_ERRORS()
+    GL_CHECK_ERRORS();
 }
 
 void* load_gl_func(const char* name)
@@ -232,25 +232,25 @@ void ImGui_ImplSdlGL3_RenderDrawLists(engine* eng, ImDrawData* draw_data)
         const ImDrawList* cmd_list          = draw_data->CmdLists[n];
         const ImDrawIdx*  idx_buffer_offset = nullptr;
 
-        const vertex2d_colored_textured* vertex_data =
+        auto vertex_data =
             reinterpret_cast<const vertex2d_colored_textured*>(
                 cmd_list->VtxBuffer.Data);
-        size_t vert_count = static_cast<size_t>(cmd_list->VtxBuffer.size());
+        auto vert_count = static_cast<size_t>(cmd_list->VtxBuffer.size());
 
-        vertex_buffer<vertex2d_colored_textured>* vertex_buff =
+        auto vertex_buff =
             new vertex_buffer(vertex_data, vert_count);
 
         const std::uint16_t* indexes = cmd_list->IdxBuffer.Data;
-        size_t index_count = static_cast<size_t>(cmd_list->IdxBuffer.size());
+        auto index_count = static_cast<size_t>(cmd_list->IdxBuffer.size());
 
-        index_buffer* index_buff = new index_buffer(indexes, index_count);
+        auto index_buff = new index_buffer(indexes, index_count);
 
         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
         {
             const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 
-            texture_opengl* tex =
-                reinterpret_cast<texture_opengl*>(pcmd->TextureId);
+            auto tex =
+                static_cast<texture_opengl*>(pcmd->TextureId);
             eng->render_triangles(vertex_buff,
                                   index_buff,
                                   tex,
@@ -288,37 +288,41 @@ int engine_opengl::initialize(config& cfg)
     std::cout << "Window size: (" << cfg.width << " " << cfg.height << ")"
               << std::endl;
 
+#ifdef __ANDROID__
+    cfg.is_full_screen = true;
+#endif
+
     if (cfg.is_full_screen)
     {
-        const SDL_DisplayMode* dispale_mode = SDL_GetCurrentDisplayMode(1);
-        if (!dispale_mode)
+        const SDL_DisplayMode* display_mode = SDL_GetCurrentDisplayMode(1);
+        if (!display_mode)
         {
             std::cout << "can't get current display mode: " << SDL_GetError()
                       << std::endl;
         }
-        cfg.width  = dispale_mode->w;
-        cfg.height = dispale_mode->h;
+        cfg.width  = display_mode->w;
+        cfg.height = display_mode->h;
 
         window = static_cast<SDL_Window*>(
             SDL_CreateWindow(cfg.app_name,
-                             cfg.width,
-                             cfg.height,
+                             static_cast<int>(cfg.width),
+                             static_cast<int>(cfg.height),
                              SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL));
     }
     else
     {
 #ifdef __ANDROID__
-        const SDL_DisplayMode* dispale_mode = SDL_GetCurrentDisplayMode(1);
-        if (!dispale_mode)
+        const SDL_DisplayMode* display_mode = SDL_GetCurrentDisplayMode(1);
+        if (!display_mode)
         {
             std::cout << "can't get current display mode: " << SDL_GetError()
                       << std::endl;
         }
-        cfg.width  = dispale_mode->w;
-        cfg.height = dispale_mode->h;
+        cfg.width  = display_mode->w;
+        cfg.height = display_mode->h;
 #endif
         window = static_cast<SDL_Window*>(SDL_CreateWindow(
-            cfg.app_name, cfg.width, cfg.height, SDL_WINDOW_OPENGL));
+            cfg.app_name, static_cast<int>(cfg.width), static_cast<int>(cfg.height), SDL_WINDOW_OPENGL));
     }
     std::cout << "Window size: (" << cfg.width << " " << cfg.height << ")"
               << std::endl;
@@ -514,7 +518,7 @@ bool engine_opengl::event_keyboard(event& e)
                 break;
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
                 // clang-format off
-                if (sdl_event.button.button == SDL_BUTTON_LEFT) e.mouse.left_cliked = 1;
+                if (sdl_event.button.button == SDL_BUTTON_LEFT) e.mouse.left_clicked = 1;
                 // clang-format on
                 is_event = true;
                 break;
@@ -605,7 +609,7 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d>* vertexes,
     bind_normal<vertex3d>();
 
     glDrawElements(
-        GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
+        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()
 }
 void engine_opengl::render_triangles(vertex_buffer<vertex3d_colored>* vertexes,
@@ -623,7 +627,7 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d_colored>* vertexes,
     bind_colors<vertex3d_colored>();
 
     glDrawElements(
-        GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
+        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()
 }
 void engine_opengl::render_triangles(vertex_buffer<vertex3d_textured>* vertexes,
@@ -643,7 +647,7 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d_textured>* vertexes,
     bind_texture_coords<vertex3d_textured>();
 
     glDrawElements(
-        GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
+        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()
 }
 
@@ -664,7 +668,7 @@ void engine_opengl::render_triangles(
     bind_colors<vertex3d_colored_textured>();
 
     glDrawElements(
-        GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
+        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()
 }
 
@@ -684,7 +688,7 @@ void engine_opengl::render_triangles(
     bind_colors<vertex2d_colored_textured>();
 
     glDrawElements(
-        GL_TRIANGLES, num_vertexes, GL_UNSIGNED_SHORT, start_vertex_index);
+        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
     GL_CHECK_ERRORS()
 }
 
@@ -772,7 +776,7 @@ void engine_opengl::audio_callback(void*    engine_ptr,
 
     std::fill_n(stream, stream_size, '\0');
 
-    engine_opengl* e = static_cast<engine_opengl*>(engine_ptr);
+   auto e = static_cast<engine_opengl*>(engine_ptr);
 
     for (audio_buffer* buff : e->audio_output)
     {
@@ -834,7 +838,7 @@ void engine_opengl::play_sound(const char* path, bool is_looped)
 {
     std::lock_guard<std::mutex> lock(audio_mutex);
 
-    audio_buffer* audio_buff =
+    auto audio_buff =
         new audio_buffer(path, audio_device, audio_device_spec, is_looped);
 
     audio_buff->current_index = 0;
@@ -899,8 +903,8 @@ bool ImGui_ImplSdlGL3_ProcessEvent(const SDL_Event* event, config& cfg)
         {
             int mouse_button = 0;
 
-            ImVec2 mouse_pos((float)event->tfinger.x * cfg.width,
-                             (float)event->tfinger.y * cfg.height);
+            ImVec2 mouse_pos(event->tfinger.x * cfg.width,
+                             event->tfinger.y * cfg.height);
             io.AddMousePosEvent(mouse_pos.x, mouse_pos.y);
             io.AddMouseSourceEvent(ImGuiMouseSource_TouchScreen);
             io.AddMouseButtonEvent(mouse_button,
@@ -944,7 +948,7 @@ bool ImGui_ImplSdlGL3_CreateDeviceObjects(config& cfg)
 void ImGui_ImplSdlGL3_InvalidateDeviceObjects()
 {
     void*           ptr     = ImGui::GetIO().Fonts->TexID;
-    texture_opengl* texture = reinterpret_cast<texture_opengl*>(ptr);
+    auto texture = reinterpret_cast<texture_opengl*>(ptr);
 
     delete g_imgui_shader;
     g_imgui_shader = nullptr;
@@ -1014,7 +1018,7 @@ bool ImGui_ImplSdlGL3_Init(SDL_Window* window, config& cfg)
     //     (void)window;
     // #endif
 
-    g_Time = SDL_GetTicks() / 1000.f;
+    g_Time = static_cast<float>(SDL_GetTicks()) / 1000.f;
 
     if (io.Fonts->TexID == nullptr)
     {
@@ -1040,12 +1044,12 @@ void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window)
     SDL_GetWindowSize(window, &w, &h);
     SDL_GetWindowSizeInPixels(window, &display_w, &display_h);
     io.DisplaySize             = ImVec2(float(w), float(h));
-    io.DisplayFramebufferScale = ImVec2(w > 0 ? float(display_w / w) : 0.f,
-                                        h > 0 ? float(display_h / h) : 0.f);
+    io.DisplayFramebufferScale = ImVec2(w > 0 ? static_cast<float>(display_w) / w : 0.f,
+                                        h > 0 ? static_cast<float>(display_h) / h : 0.f);
 
     // Setup time step
     Uint32 time         = SDL_GetTicks();
-    float  current_time = time / 1000.0f;
+    float  current_time = static_cast<float>(time) / 1000.0f;
     io.DeltaTime        = current_time - g_Time; // (1.0f / 60.0f);
     if (io.DeltaTime <= 0)
     {

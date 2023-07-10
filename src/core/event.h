@@ -6,15 +6,15 @@ struct event
 {
     struct event_mouse
     {
-        uint8_t left_cliked : 1;
+        uint8_t left_clicked : 1;
         uint8_t left_released : 1;
-        uint8_t right_cliked : 1;
+        uint8_t right_clicked : 1;
         uint8_t right_released : 1;
-        uint8_t center_cliked : 1;
+        uint8_t center_clicked : 1;
         uint8_t center_released : 1;
-        uint8_t back_cliked : 1;
+        uint8_t back_clicked : 1;
         uint8_t back_released : 1;
-        uint8_t next_cliked : 1;
+        uint8_t next_clicked : 1;
         uint8_t next_released : 1;
     } mouse;
 

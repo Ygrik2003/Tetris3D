@@ -18,10 +18,11 @@ struct config
     const char* model_board            = "res/models/board.obj";
     const char* model_cube             = "res/models/cube.obj";
 
-    double width          = 1600 - 100;
-    double height         = 900 - 100;
-    bool   is_full_screen = false;
+    float width          = 1600 - 100;
+    float height         = 900 - 100;
+    bool  is_full_screen = false;
 
-    float camera_speed_rotate = 1. / 100.;
-    float camera_speed        = 0.05;
+    float camera_speed_rotate    = 1. / 100.;
+    float camera_speed           = 0.05;
+    float max_camera_speed_swipe = 10;
 };

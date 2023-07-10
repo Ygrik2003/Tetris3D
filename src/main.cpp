@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
     event e{};
 
     auto time_last = std::chrono::steady_clock::now() - std::chrono::seconds(1);
-    while (my_game.event_listener(e))
+    while (my_game.event_listener(e) && !my_game.get_quit_state())
     {
 
         auto time_now = std::chrono::steady_clock::now();
