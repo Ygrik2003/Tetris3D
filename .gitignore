@@ -5,6 +5,9 @@
 # Windows Rofls
 *.dll
 
+# Local
+imgui.ini
+
 # Gradle files
 .gradle/
 build/
