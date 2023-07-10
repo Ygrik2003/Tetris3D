@@ -1,20 +1,21 @@
 # Tetris3D
 ----
-```shaell
+```bash
 git submodule init
 git submodule update
+```
 For debug:
-```shaell
+```bash
 cmake --preset CMakePresets.json --preset=ninja-debug
 ```
 
 For release:
-```shaell
+```bash
 cmake --preset CMakePresets.json --preset=ninja-release
 ```
 
 For build for Windows from Linux:
-```shaell
+```bash
 cmake --preset CMakePresets.json --preset=ninja-windows-release
 ```
 
