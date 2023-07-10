@@ -1,5 +1,6 @@
 # Tetris3D
 ----
+For use SDL3 and Assimp:
 ```bash
 git submodule init
 git submodule update
