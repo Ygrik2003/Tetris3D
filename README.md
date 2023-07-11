@@ -28,4 +28,4 @@ On PC use WASD for moving, and left, right and down arrows for rotating.
 
 On Android use buttons.
 
-Also you can rotate camera with holding left mouse button on PC or swipe on Android.
+Also you can rotate camera with holding LBM on PC or swipe on Android.
