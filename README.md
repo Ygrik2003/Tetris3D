@@ -1,5 +1,6 @@
 # Tetris3D
 ----
+## Build
 For use SDL3 and Assimp:
 ```bash
 git submodule init
@@ -21,3 +22,8 @@ cmake --preset CMakePresets.json --preset=ninja-windows-release
 ```
 
 For compilation for android use Android Studio from folder "android-project".
+
+## Gameplay
+On PC use WASD for moving, and left, right and down arrows for rotating.
+
+On Android use buttons.
