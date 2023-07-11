@@ -4,6 +4,7 @@
 game_tetris::game_tetris()
 {
     state.is_started = 0;
+    state.is_restart = 0;
     state.is_quit    = 0;
     state.is_rotated = 0;
     state.is_moving  = 0;
@@ -41,7 +42,7 @@ int game_tetris::initialize(config _cfg)
     my_engine->play_sound(cfg.sound_background_music, true);
 
     window_score_width  = 0.1f * cfg.width;
-    window_score_height = 0.03f * cfg.height;
+    window_score_height = 0.06f * cfg.height;
     window_score_x      = 10.f;
     window_score_y      = 10.f;
 
@@ -85,27 +86,27 @@ bool game_tetris::event_listener(event& e)
                 e.motion.x < window_rotate_x && !e.mouse.left_clicked)
 #endif
             {
-                if (e.motion.x_rel && state.is_rotated) {
-
+                if (e.motion.x_rel && state.is_rotated)
+                {
 
                     if (abs(e.motion.x_rel) > cfg.max_camera_speed_swipe)
-                        e.motion.x_rel = std::copysign(cfg.max_camera_speed_swipe, e.motion.x_rel);
+                        e.motion.x_rel = std::copysign(
+                            cfg.max_camera_speed_swipe, e.motion.x_rel);
 
                     camera_angle += e.motion.x_rel * M_PI / 300;
-
                 }
-                if (e.motion.y_rel && state.is_rotated) {
-
+                if (e.motion.y_rel && state.is_rotated)
+                {
 
                     if (abs(e.motion.y_rel) > cfg.max_camera_speed_swipe)
-                        e.motion.y_rel = std::copysign(cfg.max_camera_speed_swipe, e.motion.y_rel);
+                        e.motion.y_rel = std::copysign(
+                            cfg.max_camera_speed_swipe, e.motion.y_rel);
 
                     view_height += e.motion.y_rel / 50;
                     if (view_height < min_view_height)
                         view_height = min_view_height;
                     if (view_height > max_view_height)
                         view_height = max_view_height;
-
                 }
             }
 
@@ -220,7 +221,9 @@ void game_tetris::update()
 
 void game_tetris::render()
 {
+    // ImGui::PushFont(font);
     ImGui::NewFrame();
+
     if (!state.is_started && !state.is_restart)
     {
         draw_menu();
@@ -236,6 +239,7 @@ void game_tetris::render()
         draw_ui();
     }
     ImGui::Render();
+    // ImGui::PopFont();
     my_engine->swap_buffers();
 };
 void game_tetris::add_figure(figure* fig, texture* tex)
@@ -249,7 +253,8 @@ void game_tetris::draw_menu()
     static const int window_height = 0.2 * cfg.height;
     static const int window_x      = (cfg.width - window_width) / 2;
     static const int window_y      = (cfg.height - window_height) / 2;
-    static ImVec2 button_size = ImVec2(window_width - 15, window_height / 2 - 15);
+    static ImVec2    button_size =
+        ImVec2(window_width - 15, window_height / 2 - 15);
 
     ImGui::SetNextWindowSize(ImVec2(window_width, window_height));
     ImGui::SetNextWindowPos(ImVec2(window_x, window_y));
@@ -258,6 +263,7 @@ void game_tetris::draw_menu()
                  nullptr,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+    ImGui::SetWindowFontScale(4);
 
     if (ImGui::Button("Start", button_size))
     {
@@ -288,10 +294,11 @@ void game_tetris::draw_restart_menu()
                  nullptr,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+    ImGui::SetWindowFontScale(2.1);
 
     ImGui::LabelText("", "Score: %d", score);
 
-    if (ImGui::Button("Restart", ImVec2(0.1 * cfg.width, 0.05 * cfg.height)))
+    if (ImGui::Button("Restart", ImVec2(window_width - 15, 0.05 * cfg.height)))
     {
         start_game();
     }
@@ -299,7 +306,7 @@ void game_tetris::draw_restart_menu()
     // cfg.height)))
     // {
     // }
-    if (ImGui::Button("Quit", ImVec2(0.09 * cfg.width, 0.05 * cfg.height)))
+    if (ImGui::Button("Quit", ImVec2(window_width - 15, 0.05 * cfg.height)))
     {
         state.is_quit = true;
     }
@@ -316,6 +323,7 @@ void game_tetris::draw_ui()
                  nullptr,
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar);
+    ImGui::SetWindowFontScale(2);
 
     ImGui::Text("Score: %zu", score);
 
@@ -336,7 +344,7 @@ void game_tetris::draw_ui()
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
                      ImGuiWindowFlags_NoBackground);
-
+    ImGui::SetWindowFontScale(2);
     ImGui::SetCursorPos(ImVec2(button_control_size.x + 15, 5));
 
     if (ImGui::Button("Forvard", button_control_size))
@@ -369,16 +377,16 @@ void game_tetris::draw_ui()
                  ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                      ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
                      ImGuiWindowFlags_NoBackground);
-
-    if (ImGui::Button("Rotate X axis", button_rotate_size))
+    ImGui::SetWindowFontScale(4);
+    if (ImGui::Button("Rotate X \naxis", button_rotate_size))
     {
         rotate_around(axis::x);
     }
-    if (ImGui::Button("Rotate Y axis", button_rotate_size))
+    if (ImGui::Button("Rotate Y \naxis", button_rotate_size))
     {
         rotate_around(axis::y);
     }
-    if (ImGui::Button("Rotate Z axis", button_rotate_size))
+    if (ImGui::Button("Rotate Z \naxis", button_rotate_size))
     {
         rotate_around(axis::z);
     }
@@ -412,6 +420,7 @@ void game_tetris::render_scene()
 
     for (cell* c : cells)
     {
+        figure_cube->set_scale(8. / cells_max, 8. / cells_max, 8. / cells_max);
         figure_cube->set_translate(
             vector3d(-1. / 2. + (c->get_position().x + 0.5) / cells_max,
                      (c->get_position().z + 0.5) / cells_max,
@@ -451,10 +460,38 @@ void game_tetris::lose_game()
 
 void game_tetris::add_primitive()
 {
-    static float x         = 0;
-    static float y         = 0;
-    uint8_t      index     = rand() % textures_block.size();
-    cell*        root_cell = new cell(
+    static const int   x = cells_max / 2;
+    static const int   y = cells_max / 2;
+    std::vector<cell*> cells_to_add;
+
+    switch (rand() % 3)
+    {
+        case 0:
+            cells_to_add = gen_primitive_1(x, y);
+            break;
+        case 1:
+            cells_to_add = gen_primitive_2(x, y);
+            break;
+        case 2:
+            cells_to_add = gen_primitive_3(x, y);
+            break;
+        case 3:
+            cells_to_add = gen_primitive_4(x, y);
+            break;
+    }
+
+    for (cell* c : cells_to_add)
+    {
+        cells.push_back(c);
+        find_near(c);
+    }
+    active_primitive = new primitive(cells_to_add[0]);
+}
+
+std::vector<cell*> game_tetris::gen_primitive_1(int x, int y)
+{
+    uint8_t index     = rand() % textures_block.size();
+    cell*   root_cell = new cell(
         cell::position{ static_cast<int>(x), static_cast<int>(y), cells_max_z },
         index);
     cell* cell_1 = new cell(cell::position{ static_cast<int>(x),
@@ -465,22 +502,74 @@ void game_tetris::add_primitive()
                                             static_cast<int>(y),
                                             cells_max_z },
                             index);
-    cells.push_back(root_cell);
-    cells.push_back(cell_1);
-    cells.push_back(cell_2);
-    find_near(root_cell);
-    find_near(cell_1);
-    find_near(cell_2);
-    active_primitive = new primitive(root_cell);
+    cell* cell_3 = new cell(cell::position{ static_cast<int>(x - 1),
+                                            static_cast<int>(y),
+                                            cells_max_z },
+                            index);
+    return std::vector<cell*>{ root_cell, cell_1, cell_2, cell_3 };
+}
 
-    x += 2;
-    if (x == cells_max)
-    {
-        x = 0;
-        y += 0.5;
-        if (y == cells_max)
-            y = 0;
-    }
+std::vector<cell*> game_tetris::gen_primitive_2(int x, int y)
+{
+    uint8_t index     = rand() % textures_block.size();
+    cell*   root_cell = new cell(
+        cell::position{ static_cast<int>(x), static_cast<int>(y), cells_max_z },
+        index);
+    cell* cell_1 = new cell(cell::position{ static_cast<int>(x - 1),
+                                            static_cast<int>(y),
+                                            cells_max_z },
+                            index);
+    cell* cell_2 = new cell(cell::position{ static_cast<int>(x + 1),
+                                            static_cast<int>(y),
+                                            cells_max_z },
+                            index);
+    cell* cell_3 = new cell(cell::position{ static_cast<int>(x + 2),
+                                            static_cast<int>(y),
+                                            cells_max_z },
+                            index);
+    return std::vector<cell*>{ root_cell, cell_1, cell_2, cell_3 };
+}
+
+std::vector<cell*> game_tetris::gen_primitive_3(int x, int y)
+{
+    uint8_t index     = rand() % textures_block.size();
+    cell*   root_cell = new cell(
+        cell::position{ static_cast<int>(x), static_cast<int>(y), cells_max_z },
+        index);
+    cell* cell_1 = new cell(cell::position{ static_cast<int>(x),
+                                            static_cast<int>(y),
+                                            cells_max_z - 1 },
+                            index);
+    cell* cell_2 = new cell(cell::position{ static_cast<int>(x + 1),
+                                            static_cast<int>(y),
+                                            cells_max_z },
+                            index);
+    cell* cell_3 = new cell(cell::position{ static_cast<int>(x + 2),
+                                            static_cast<int>(y),
+                                            cells_max_z },
+                            index);
+    return std::vector<cell*>{ root_cell, cell_1, cell_2, cell_3 };
+}
+
+std::vector<cell*> game_tetris::gen_primitive_4(int x, int y)
+{
+    uint8_t index     = rand() % textures_block.size();
+    cell*   root_cell = new cell(
+        cell::position{ static_cast<int>(x), static_cast<int>(y), cells_max_z },
+        index);
+    cell* cell_1 = new cell(cell::position{ static_cast<int>(x),
+                                            static_cast<int>(y),
+                                            cells_max_z - 1 },
+                            index);
+    cell* cell_2 = new cell(cell::position{ static_cast<int>(x + 1),
+                                            static_cast<int>(y),
+                                            cells_max_z },
+                            index);
+    cell* cell_3 = new cell(cell::position{ static_cast<int>(x + 1),
+                                            static_cast<int>(y),
+                                            cells_max_z - 1 },
+                            index);
+    return std::vector<cell*>{ root_cell, cell_1, cell_2, cell_3 };
 }
 
 bool game_tetris::move_active_cells(direction dir)
@@ -578,7 +667,7 @@ bool game_tetris::rotate_around(axis ax)
         new_pos = get_rotate_pos(cur_pos) + center_position;
 
         if (new_pos.x < 0 || new_pos.y < 0 || new_pos.z < 0 ||
-                 (new_pos.x > cells_max - 1) || (new_pos.y > cells_max - 1))
+            (new_pos.x > cells_max - 1) || (new_pos.y > cells_max - 1))
         {
             return false;
         }
@@ -702,6 +791,7 @@ void game_tetris::check_layer()
     }
 }
 
-bool game_tetris::get_quit_state() const {
+bool game_tetris::get_quit_state() const
+{
     return state.is_quit;
 }

@@ -232,13 +232,11 @@ void ImGui_ImplSdlGL3_RenderDrawLists(engine* eng, ImDrawData* draw_data)
         const ImDrawList* cmd_list          = draw_data->CmdLists[n];
         const ImDrawIdx*  idx_buffer_offset = nullptr;
 
-        auto vertex_data =
-            reinterpret_cast<const vertex2d_colored_textured*>(
-                cmd_list->VtxBuffer.Data);
+        auto vertex_data = reinterpret_cast<const vertex2d_colored_textured*>(
+            cmd_list->VtxBuffer.Data);
         auto vert_count = static_cast<size_t>(cmd_list->VtxBuffer.size());
 
-        auto vertex_buff =
-            new vertex_buffer(vertex_data, vert_count);
+        auto vertex_buff = new vertex_buffer(vertex_data, vert_count);
 
         const std::uint16_t* indexes = cmd_list->IdxBuffer.Data;
         auto index_count = static_cast<size_t>(cmd_list->IdxBuffer.size());
@@ -249,8 +247,7 @@ void ImGui_ImplSdlGL3_RenderDrawLists(engine* eng, ImDrawData* draw_data)
         {
             const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 
-            auto tex =
-                static_cast<texture_opengl*>(pcmd->TextureId);
+            auto tex = static_cast<texture_opengl*>(pcmd->TextureId);
             eng->render_triangles(vertex_buff,
                                   index_buff,
                                   tex,
@@ -321,8 +318,11 @@ int engine_opengl::initialize(config& cfg)
         cfg.width  = display_mode->w;
         cfg.height = display_mode->h;
 #endif
-        window = static_cast<SDL_Window*>(SDL_CreateWindow(
-            cfg.app_name, static_cast<int>(cfg.width), static_cast<int>(cfg.height), SDL_WINDOW_OPENGL));
+        window = static_cast<SDL_Window*>(
+            SDL_CreateWindow(cfg.app_name,
+                             static_cast<int>(cfg.width),
+                             static_cast<int>(cfg.height),
+                             SDL_WINDOW_OPENGL));
     }
     std::cout << "Window size: (" << cfg.width << " " << cfg.height << ")"
               << std::endl;
@@ -608,8 +608,10 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d>* vertexes,
     bind_vertexes<vertex3d>();
     bind_normal<vertex3d>();
 
-    glDrawElements(
-        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
+    glDrawElements(GL_TRIANGLES,
+                   static_cast<int>(num_vertexes),
+                   GL_UNSIGNED_SHORT,
+                   start_vertex_index);
     GL_CHECK_ERRORS()
 }
 void engine_opengl::render_triangles(vertex_buffer<vertex3d_colored>* vertexes,
@@ -626,8 +628,10 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d_colored>* vertexes,
     bind_normal<vertex3d_colored>();
     bind_colors<vertex3d_colored>();
 
-    glDrawElements(
-        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
+    glDrawElements(GL_TRIANGLES,
+                   static_cast<int>(num_vertexes),
+                   GL_UNSIGNED_SHORT,
+                   start_vertex_index);
     GL_CHECK_ERRORS()
 }
 void engine_opengl::render_triangles(vertex_buffer<vertex3d_textured>* vertexes,
@@ -646,8 +650,10 @@ void engine_opengl::render_triangles(vertex_buffer<vertex3d_textured>* vertexes,
     bind_normal<vertex3d_textured>();
     bind_texture_coords<vertex3d_textured>();
 
-    glDrawElements(
-        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
+    glDrawElements(GL_TRIANGLES,
+                   static_cast<int>(num_vertexes),
+                   GL_UNSIGNED_SHORT,
+                   start_vertex_index);
     GL_CHECK_ERRORS()
 }
 
@@ -667,8 +673,10 @@ void engine_opengl::render_triangles(
     bind_texture_coords<vertex3d_colored_textured>();
     bind_colors<vertex3d_colored_textured>();
 
-    glDrawElements(
-        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
+    glDrawElements(GL_TRIANGLES,
+                   static_cast<int>(num_vertexes),
+                   GL_UNSIGNED_SHORT,
+                   start_vertex_index);
     GL_CHECK_ERRORS()
 }
 
@@ -687,8 +695,10 @@ void engine_opengl::render_triangles(
     bind_texture_coords<vertex2d_colored_textured>();
     bind_colors<vertex2d_colored_textured>();
 
-    glDrawElements(
-        GL_TRIANGLES, static_cast<int>(num_vertexes), GL_UNSIGNED_SHORT, start_vertex_index);
+    glDrawElements(GL_TRIANGLES,
+                   static_cast<int>(num_vertexes),
+                   GL_UNSIGNED_SHORT,
+                   start_vertex_index);
     GL_CHECK_ERRORS()
 }
 
@@ -776,7 +786,7 @@ void engine_opengl::audio_callback(void*    engine_ptr,
 
     std::fill_n(stream, stream_size, '\0');
 
-   auto e = static_cast<engine_opengl*>(engine_ptr);
+    auto e = static_cast<engine_opengl*>(engine_ptr);
 
     for (audio_buffer* buff : e->audio_output)
     {
@@ -947,8 +957,8 @@ bool ImGui_ImplSdlGL3_CreateDeviceObjects(config& cfg)
 
 void ImGui_ImplSdlGL3_InvalidateDeviceObjects()
 {
-    void*           ptr     = ImGui::GetIO().Fonts->TexID;
-    auto texture = reinterpret_cast<texture_opengl*>(ptr);
+    void* ptr     = ImGui::GetIO().Fonts->TexID;
+    auto  texture = reinterpret_cast<texture_opengl*>(ptr);
 
     delete g_imgui_shader;
     g_imgui_shader = nullptr;
@@ -1037,15 +1047,15 @@ void ImGui_ImplSdlGL3_Shutdown()
 void ImGui_ImplSdlGL3_NewFrame(SDL_Window* window)
 {
     ImGuiIO& io = ImGui::GetIO();
-
     // Setup display size (every frame to accommodate for window resizing)
     int w, h;
     int display_w, display_h;
     SDL_GetWindowSize(window, &w, &h);
     SDL_GetWindowSizeInPixels(window, &display_w, &display_h);
-    io.DisplaySize             = ImVec2(float(w), float(h));
-    io.DisplayFramebufferScale = ImVec2(w > 0 ? static_cast<float>(display_w) / w : 0.f,
-                                        h > 0 ? static_cast<float>(display_h) / h : 0.f);
+    io.DisplaySize = ImVec2(float(w), float(h));
+    io.DisplayFramebufferScale =
+        ImVec2(w > 0 ? static_cast<float>(display_w) / w : 0.f,
+               h > 0 ? static_cast<float>(display_h) / h : 0.f);
 
     // Setup time step
     Uint32 time         = SDL_GetTicks();

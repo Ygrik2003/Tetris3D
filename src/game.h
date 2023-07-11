@@ -23,8 +23,8 @@ enum class direction
 
 enum class axis
 {
-    x, 
-    y, 
+    x,
+    y,
     z
 };
 
@@ -85,11 +85,11 @@ public:
     {
         neighboors[static_cast<int>(dir)] = c;
     }
-    uint8_t get_texture_index() { return texture_index; }
-    bool        get_moving() { return is_moving; }
-    void        set_moving(bool state) { is_moving = state; }
-    position    get_position() { return pos; }
-    void        set_position(position _pos) { pos = _pos; }
+    uint8_t  get_texture_index() { return texture_index; }
+    bool     get_moving() { return is_moving; }
+    void     set_moving(bool state) { is_moving = state; }
+    position get_position() { return pos; }
+    void     set_position(position _pos) { pos = _pos; }
 
 private:
     position             pos;
@@ -113,7 +113,7 @@ private:
     bool      is_active = true;
 };
 
-constexpr int cells_max    = 8;
+constexpr int cells_max    = 5;
 constexpr int cells_max_z  = 14;
 constexpr int cells_z_lose = 10;
 
@@ -151,9 +151,13 @@ private:
     void draw_ui();
     void render_scene();
 
-    void start_game();
-    void lose_game();
-    void add_primitive();
+    void               start_game();
+    void               lose_game();
+    void               add_primitive();
+    std::vector<cell*> gen_primitive_1(int x, int y);
+    std::vector<cell*> gen_primitive_2(int x, int y);
+    std::vector<cell*> gen_primitive_3(int x, int y);
+    std::vector<cell*> gen_primitive_4(int x, int y);
 
     bool move_active_cells(direction dir);
     bool rotate_around(axis ax);
@@ -178,10 +182,10 @@ private:
     texture*              texture_board = nullptr;
     std::vector<texture*> textures_block;
 
-    float camera_angle = -M_PI / 2;
-    float view_height  = 1.;
-    float min_view_height  = 1.;
-    float max_view_height  = 1.6;
+    float camera_angle    = -M_PI / 2.f;
+    float view_height     = 1.f;
+    float min_view_height = 1.f;
+    float max_view_height = 1.6f * 8.f / cells_max;
 
     struct flags
     {
@@ -205,4 +209,6 @@ private:
     float window_rotate_height;
     float window_rotate_x;
     float window_rotate_y;
+
+    ImFont* font = nullptr;
 };
