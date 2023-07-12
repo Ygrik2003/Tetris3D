@@ -754,7 +754,8 @@ void game_tetris::collision()
         c->set_moving(false);
     }
     check_layer();
-    add_primitive();
+    if (state.is_started)
+        add_primitive();
 }
 
 void game_tetris::check_layer()
